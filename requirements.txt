@@ -1,0 +1,13 @@
+numpy
+packaging
+pydra_config
+torch
+tqdm
+datasets
+transformers
+pytest
+ninja
+accelerate
+bitsandbytes
+wandb
+trl
