@@ -66,4 +66,4 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, correctness_
         ).total_reward
         rewards.append(reward)
 
-    return torch.tensor(rewards)
+    return rewards
