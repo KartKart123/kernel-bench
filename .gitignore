@@ -9,5 +9,6 @@ results/*
 runs/*
 cache/*
 data/*
+wandb/*
 !results/timing/
 .env

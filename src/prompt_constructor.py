@@ -18,6 +18,7 @@ REPO_TOP_PATH = os.path.abspath(
 )
 KERNEL_BENCH_PATH = os.path.join(REPO_TOP_PATH, "KernelBench")
 
+SYSTEM_PROMPT = """You are an expert CUDA programmer specializing in kernel optimization. Your task is to optimize CUDA kernels for specific GPU architectures while maintaining correctness."""
 
 def get_arch_definition_from_file(arch_path):
     arch_src = read_file(arch_path)

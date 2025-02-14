@@ -7,7 +7,7 @@ from datasets import load_dataset, Dataset
 from trl import GRPOConfig, GRPOTrainer
 from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
-from src.prompt_constructor import prompt_generate_prompt_with_hardware_info_from_template
+from src.prompt_constructor import prompt_generate_prompt_with_hardware_info_from_template, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file
 from src.reward import reward_fn
 
@@ -16,7 +16,7 @@ class TrainingConfig(Config):
         # Model configuration
         self.model_name = "Qwen/Qwen2.5-0.5B-Instruct"# "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 4096
+        self.max_tokens = 512
         
         # GRPO configuration
         self.num_generations = 2  # Number of generations per prompt (G in the paper)
@@ -25,11 +25,11 @@ class TrainingConfig(Config):
         
         # Training configuration
         self.num_epochs = 10
-        self.batch_size = 4
+        self.batch_size = 1
         self.gradient_accumulation_steps = 1
         
         # Dataset configuration
-        self.level = 1  # Which level of KernelBench to train on
+        self.level = 1
         self.dataset_name = "ScalingIntelligence/KernelBench"
         self.dataset_path = f"data/kernelbench_level_{self.level}"
         
@@ -75,7 +75,7 @@ def main(config: TrainingConfig):
                 continue
             baseline_runtimes.append(baseline_stats["mean"])
             prompt = prompt_generate_prompt_with_hardware_info_from_template(ref_arch_src, gpu_name=config.gpu_name)
-            train_prompts.append(prompt)
+            train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
             ref_arch_srcs.append(ref_arch_src)
         
         dataset = Dataset.from_dict({
@@ -102,7 +102,8 @@ def main(config: TrainingConfig):
         num_generations=config.num_generations,
         temperature=config.temperature,
         beta=config.beta,
-        bf16=True
+        bf16=True,
+        # use_vllm=True
     )
 
     # Create GRPO trainer
