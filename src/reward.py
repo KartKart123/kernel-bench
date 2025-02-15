@@ -5,9 +5,7 @@ from src.utils import extract_first_code
 
 def calculate_kernel_reward(
     eval_result: KernelExecResult,
-    baseline_runtime: float,
-    correctness_weight: float = 0.7,
-    performance_weight: float = 0.3,
+    baseline_runtime: float
 ) -> float:
     correctness_reward = float(eval_result.correctness)
     
@@ -17,8 +15,7 @@ def calculate_kernel_reward(
     else:
         performance_reward = 0.0
         
-    total_reward = (correctness_weight * correctness_reward + 
-                   performance_weight * performance_reward)
+    total_reward = correctness_reward + performance_reward
     
     return total_reward
 
@@ -27,7 +24,7 @@ def extract_xml_answer(text: str) -> str:
     answer = answer.split("</answer>")[0]
     return answer.strip()
 
-def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, correctness_weight=0.7, performance_weight=0.3, **kwargs):
+def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
     rewards = []
     pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     for prompt, completion, ref_arch in zip(prompts, completions, ref_arch_src):
@@ -60,10 +57,8 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, correctness_
         )
         reward += calculate_kernel_reward(
             eval_result=eval_result,
-            baseline_runtime=baseline_runtime,
-            correctness_weight=correctness_weight,
-            performance_weight=performance_weight
-        ).total_reward
+            baseline_runtime=baseline_runtime
+        )
         rewards.append(reward)
 
     return rewards

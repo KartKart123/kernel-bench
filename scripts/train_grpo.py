@@ -33,10 +33,6 @@ class TrainingConfig(Config):
         self.dataset_name = "ScalingIntelligence/KernelBench"
         self.dataset_path = f"data/kernelbench_level_{self.level}"
         
-        # Reward weights
-        self.correctness_weight = 0.7
-        self.performance_weight = 0.3
-        
         # Hardware configuration
         self.gpu_arch = ["Hopper"]  # GPU architecture for kernel compilation
         self.gpu_name = "H100"
