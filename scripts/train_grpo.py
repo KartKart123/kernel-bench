@@ -33,7 +33,8 @@ class TrainingConfig(Config):
         # Dataset configuration
         self.level = 1
         self.dataset_name = "ScalingIntelligence/KernelBench"
-        self.dataset_path = f"data/kernelbench_level_{self.level}.json"
+        self.dataset_dir = "data"
+        self.dataset_path = f"{self.dataset_dir}/kernelbench_level_{self.level}.json"
         
         # Hardware configuration
         self.gpu_arch = ["Hopper"]  # GPU architecture for kernel compilation
@@ -59,7 +60,7 @@ def main(config: TrainingConfig):
     
     # Create output directory
     os.makedirs(config.output_dir, exist_ok=True)
-    
+    os.makedirs(config.dataset_dir, exist_ok=True)
     # Try to load existing dataset
     if os.path.exists(config.dataset_path):
         print(f"Loading preprocessed dataset from {config.dataset_path}")
@@ -91,7 +92,6 @@ def main(config: TrainingConfig):
 
         # Save processed dataset
         print(f"Saving preprocessed dataset to {config.dataset_path}")
-        os.makedirs(config.dataset_path, exist_ok=True)
         with open(config.dataset_path, "w") as f:
             json.dump(data, f)
         
