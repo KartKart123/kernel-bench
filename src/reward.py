@@ -28,11 +28,6 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
     rewards = []
     pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     for prompt, completion, ref_arch in zip(prompts, completions, ref_arch_src):
-        print(prompt)
-        print("\n\n")
-        print(completion)
-        input()
-
         reward = 0.0
         content = completion[0]["content"]
         match = re.match(pattern, content, re.DOTALL | re.MULTILINE)
@@ -40,15 +35,10 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
         if match is None:
             rewards.append(reward)
             continue
-        reward += 0.5
+        reward += 1.0
 
         answer = extract_xml_answer(content)
         custom_cuda = extract_first_code(answer, ["python", "cpp"])
-
-        if custom_cuda is None:
-            rewards.append(reward)
-            continue
-        reward += 0.5
 
         eval_result = eval_kernel_against_ref(
             original_model_src=ref_arch,

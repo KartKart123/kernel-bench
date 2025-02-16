@@ -1,8 +1,9 @@
 import os
+import json
 import torch
 import pydra
 from pydra import REQUIRED, Config
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM
 from datasets import load_dataset, Dataset
 from trl import GRPOConfig, GRPOTrainer
 from tqdm import tqdm
@@ -10,6 +11,7 @@ from src.dataset import construct_kernelbench_dataset
 from src.prompt_constructor import prompt_generate_prompt_with_hardware_info_from_template, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file
 from src.reward import reward_fn
+from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
@@ -19,7 +21,7 @@ class TrainingConfig(Config):
         self.max_tokens = 512
         
         # GRPO configuration
-        self.num_generations = 2  # Number of generations per prompt (G in the paper)
+        self.num_generations = 2  # Number of generations per prompt
         self.beta = 0.01  # KL coefficient
         self.temperature = 0.9
         
@@ -31,7 +33,7 @@ class TrainingConfig(Config):
         # Dataset configuration
         self.level = 1
         self.dataset_name = "ScalingIntelligence/KernelBench"
-        self.dataset_path = f"data/kernelbench_level_{self.level}"
+        self.dataset_path = f"data/kernelbench_level_{self.level}.json"
         
         # Hardware configuration
         self.gpu_arch = ["Hopper"]  # GPU architecture for kernel compilation
@@ -39,6 +41,16 @@ class TrainingConfig(Config):
         
         # Output configuration
         self.output_dir = "runs/grpo_training"
+        
+        self.full_finetune = True
+        # LoRA configuration
+        self.lora_r = 8
+        self.lora_alpha = self.lora_r
+        self.lora_dropout = 0.01
+        self.lora_target_modules = [
+            "q_proj", "k_proj", "v_proj", "o_proj", 
+            "gate_proj", "down_proj", "up_proj"
+        ]
 
 @pydra.main(base=TrainingConfig)
 def main(config: TrainingConfig):
@@ -51,7 +63,8 @@ def main(config: TrainingConfig):
     # Try to load existing dataset
     if os.path.exists(config.dataset_path):
         print(f"Loading preprocessed dataset from {config.dataset_path}")
-        dataset = Dataset.load_from_disk(config.dataset_path)
+        with open(config.dataset_path, "r") as f:
+            data = json.load(f)
     else:
         # Load and process dataset
         print("Loading dataset...")
@@ -59,7 +72,6 @@ def main(config: TrainingConfig):
         
         # Prepare training data
         print("Preparing training data...")
-        train_prompts = []
         ref_arch_srcs = []
         baseline_runtimes = []
         
@@ -70,19 +82,29 @@ def main(config: TrainingConfig):
                 print(f"Skipping problem {problem} due to baseline measurement error")
                 continue
             baseline_runtimes.append(baseline_stats["mean"])
-            prompt = prompt_generate_prompt_with_hardware_info_from_template(ref_arch_src, gpu_name=config.gpu_name)
-            train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
             ref_arch_srcs.append(ref_arch_src)
         
-        dataset = Dataset.from_dict({
-            "prompt": train_prompts, 
-            "ref_arch_src": ref_arch_srcs, 
+        data = {
+            "ref_arch_src": ref_arch_srcs,
             "baseline_runtime": baseline_runtimes
-        })
-        
+        }
+
         # Save processed dataset
         print(f"Saving preprocessed dataset to {config.dataset_path}")
-        dataset.save_to_disk(config.dataset_path)
+        os.makedirs(config.dataset_path, exist_ok=True)
+        with open(config.dataset_path, "w") as f:
+            json.dump(data, f)
+        
+    train_prompts = []
+    for ref_arch_src in data["ref_arch_src"]:
+        prompt = prompt_generate_prompt_with_hardware_info_from_template(ref_arch_src, gpu_name=config.gpu_name)
+        train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
+
+    dataset = Dataset.from_dict({
+        "prompt": train_prompts,
+        "ref_arch_src": data["ref_arch_src"],
+        "baseline_runtime": data["baseline_runtime"]
+    })
 
     print(f"Dataset size: {len(dataset)}")
 
@@ -102,9 +124,31 @@ def main(config: TrainingConfig):
         # use_vllm=True
     )
 
-    # Create GRPO trainer
+    if config.full_finetune:
+        model = config.model_name
+    else:
+        # Create model and apply LoRA
+        model = AutoModelForCausalLM.from_pretrained(
+            config.model_name,
+            torch_dtype=torch.bfloat16,
+            device_map="auto"
+        )
+    
+        lora_config = LoraConfig(
+            r=config.lora_r,
+            lora_alpha=config.lora_alpha,
+            target_modules=config.lora_target_modules,
+            lora_dropout=config.lora_dropout,
+            bias="none",
+            task_type="CAUSAL_LM"
+        )
+
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
+
+    # Create GRPO trainer with LoRA model
     trainer = GRPOTrainer(
-        model=config.model_name,
+        model=model,
         reward_funcs=reward_fn,
         args=training_args,
         train_dataset=dataset
