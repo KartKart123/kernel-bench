@@ -9,6 +9,7 @@ def calculate_kernel_reward(
 ) -> float:
     if eval_result is None:
         return 0.0
+    compilation_reward = float(eval_result.compiled)
     correctness_reward = float(eval_result.correctness)
     if eval_result.correctness and eval_result.runtime > 0:
         speedup = baseline_runtime / eval_result.runtime
@@ -16,7 +17,7 @@ def calculate_kernel_reward(
     else:
         performance_reward = 0.0
         
-    total_reward = correctness_reward + performance_reward
+    total_reward = compilation_reward + correctness_reward + performance_reward
     
     return total_reward
 
@@ -27,7 +28,7 @@ def format_reward(completions, **kwargs):
     matches = [re.match(pattern, content, re.DOTALL | re.MULTILINE) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
-def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
+def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
     rewards = []
     pattern = r"^.*?</think>.*?```(.*?)```.*?$"
     #pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
@@ -52,7 +53,8 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
         eval_result = eval_kernel_against_ref(
             original_model_src=ref_arch,
             custom_model_src=custom_cuda,
-            measure_performance=True
+            measure_performance=True,
+            device=torch.device(trainer.model.device)
         )
         print(eval_result)
         #input()

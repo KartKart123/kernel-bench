@@ -149,7 +149,7 @@ def load_custom_model(
         ) + model_custom_src
 
     try:
-        with time_limit(5): 
+        with time_limit(10): 
             exec(model_custom_src, context)
     except TimeoutException as e:
         print(f"Execution timed out: {e}")
@@ -379,9 +379,9 @@ def eval_kernel_against_ref(
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
         ModelNew = load_custom_model(custom_model_src, context, build_dir)
+        torch.cuda.synchronize(device=device)  # not sure if this is too much
         if ModelNew is None:
             raise RuntimeError("ModelNew is None")
-        torch.cuda.synchronize(device=device)  # not sure if this is too much
     except Exception as e:
         print(
             f"Failed to compile custom CUDA kernel: Record as compilation failure. \nError: {e}"

@@ -16,23 +16,24 @@ from peft import LoraConfig, get_peft_model
 class TrainingConfig(Config):
     def __init__(self):
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 8192
+        self.max_tokens = 4096
         
         # GRPO configuration
-        self.num_generations = 16  # Number of generations per prompt
+        self.num_generations = 7  # Number of generations per prompt
         self.beta = 0.001  # KL coefficient
         self.temperature = 0.7
         
         # Training configuration
         self.num_epochs = 20
-        self.batch_size = 16
-        self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = False
+        self.batch_size = 1
+        self.gradient_accumulation_steps = 2
+        self.gradient_checkpointing = True
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
-        
+        self.optim = "adamw_torch"
+
         # Dataset configuration
         self.level = 1
         self.dataset_name = "ScalingIntelligence/KernelBench"
@@ -134,7 +135,10 @@ def main(config: TrainingConfig):
         beta=config.beta,
         bf16=True,
         use_vllm=config.use_vllm,
-        vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization
+        vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
+        optim=config.optim,
+        report_to=["wandb"],
+        logging_steps=1
     )
 
     if config.full_finetune:
@@ -163,7 +167,8 @@ def main(config: TrainingConfig):
     # Create GRPO trainer with LoRA model
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[reward_fn, format_reward],
+        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, **kwargs), 
+                      format_reward],
         args=training_args,
         train_dataset=dataset,
         processing_class=tokenizer
