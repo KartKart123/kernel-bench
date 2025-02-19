@@ -26,7 +26,7 @@ def extract_xml_answer(text: str) -> str:
 
 def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, **kwargs):
     rewards = []
-    pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
+    pattern = r"^.*?</think>\s*<answer>.*?</answer>$"
     for prompt, completion, ref_arch in zip(prompts, completions, ref_arch_src):
         reward = 0.0
         content = completion[0]["content"]
