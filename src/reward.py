@@ -29,7 +29,7 @@ def format_reward(completions, **kwargs):
     matches = [re.match(pattern, content, re.DOTALL | re.MULTILINE) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
-def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_ids, **kwargs):
+def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs):
     output_dir = "outputs"
     os.makedirs(output_dir, exist_ok=True) # TODO: put into train_grpo.py
     rewards = []
@@ -37,12 +37,12 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
     current_step = trainer.state.global_step
     device = trainer.model.device
     #pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
-    for prompt, completion, runtime, ref_arch, task_id in zip(prompts, completions, baseline_runtime, ref_arch_src, task_ids):
+    for prompt, completion, runtime, ref_arch, id in zip(prompts, completions, baseline_runtime, ref_arch_src, task_id):
         reward = 0.0
         content = completion[0]["content"]
         match = re.match(pattern, content, re.DOTALL | re.MULTILINE)
-        print(content)
-        input()
+        # print(content)
+        # input()
         if match is None:
             rewards.append(reward)
             continue
@@ -53,16 +53,16 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
         for code_type in ["python", "cpp"]:
             if custom_cuda.startswith(code_type):
                 custom_cuda = custom_cuda[len(code_type) :].strip()
-        print(custom_cuda)
-        input()
+        # print(custom_cuda)
+        # input()
         eval_result = eval_kernel_against_ref(
             original_model_src=ref_arch,
             custom_model_src=custom_cuda,
             measure_performance=True,
             device=torch.device(device)
         )
-        print(eval_result)
-        input()
+        # print(eval_result)
+        # input()
         compilation_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
             eval_result=eval_result,
             baseline_runtime=runtime
@@ -71,11 +71,11 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
         # Compute total reward
         reward = parse_reward + compilation_reward + correctness_reward + performance_reward
         rewards.append(reward)
-        print(reward)
-        input()
+        # print(reward)
+        # input()
 
         # Save outputs
-        arch_output_dir = f"{output_dir}/task_{task_id}"
+        arch_output_dir = f"{output_dir}/task_{id}"
         arch_output_path = f"{arch_output_dir}/step_{current_step}.json"
         os.makedirs(arch_output_dir, exist_ok=True)
 
@@ -91,7 +91,7 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
 
         # Append new entry
         entry = {
-            "task_id": task_id,
+            "task_id": id,
             "prompt": prompt[0]["content"],
             "response": content,
             "compiled": eval_result.compiled,
@@ -108,6 +108,6 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
         
         # Write back to file
         with open(arch_output_path, 'w') as f:
-            json.dump(data, indent=2)
+            json.dump(data, f,indent=2)
 
     return rewards

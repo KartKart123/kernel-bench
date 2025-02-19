@@ -28,7 +28,7 @@ class TrainingConfig(Config):
         # Training configuration
         self.num_epochs = 20
         self.batch_size = 1
-        self.gradient_accumulation_steps = 2
+        self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = True
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
@@ -170,7 +170,7 @@ def main(config: TrainingConfig):
     # Create GRPO trainer with LoRA model
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, task_ids, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_ids, **kwargs), 
+        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs), 
                       format_reward],
         args=training_args,
         train_dataset=dataset,
