@@ -19,6 +19,7 @@ REPO_TOP_PATH = os.path.abspath(
 KERNEL_BENCH_PATH = os.path.join(REPO_TOP_PATH, "KernelBench")
 
 SYSTEM_PROMPT = """You are an expert CUDA programmer specializing in kernel optimization. Your task is to optimize CUDA kernels for specific GPU architectures while maintaining correctness."""
+SYSTEM_PROMPT = """"""
 
 def get_arch_definition_from_file(arch_path):
     arch_src = read_file(arch_path)
@@ -34,8 +35,61 @@ def get_arch_definition(arch_src):
 
 
 ############################################
-# CUDA Prompt
+# Custom CUDA Prompt
 ############################################
+
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels. Optimize for correctness and speedups."""
+
+CUSTOM_PROBLEM_INSTRUCTION = '''
+After <think></think>, your final answer should follow this format: 
+<answer>
+...
+from torch.utils.cpp_extension import load_inline
+
+[TASK_NAME]_source = """
+#include <torch/extension.h>
+#include <cuda_runtime.h>
+
+__global__ void [TASK_NAME]_kernel(...) {
+    ...
+}
+
+torch::Tensor [TASK_NAME]_cuda(...) {
+    ...
+}
+"""
+
+[TASK_NAME]_cpp_source = (
+    torch::Tensor [TASK_NAME]_cuda(...);
+)
+
+[TASK_NAME] = load_inline(
+    name="[TASK_NAME]",
+    cpp_sources=[TASK_NAME]_cpp_source,
+    cuda_sources=[TASK_NAME]_source,
+    functions=["[TASK_NAME]_cuda"],
+    verbose=True,
+    extra_cflags=[""],
+    extra_ldflags=[""],
+)
+
+class ModelNew(nn.Module):
+    ...
+
+</answer>
+'''
+
+def custom_prompt_generate_custom_cuda(
+    arc_src: str
+) -> str:
+    prompt = CUSTOM_PROBLEM_STATEMENT
+    prompt += CUSTOM_PROBLEM_INSTRUCTION
+    return prompt
+
+############################################
+# Old CUDA Prompt
+############################################
+
 PROBLEM_STATEMENT = """You write custom CUDA kernels to replace the pytorch operators in the given architecture to get speedups. \n
     You have complete freedom to choose the set of operators you want to replace. You may make the decision to replace some operators with custom CUDA kernels and leave others unchanged. You may replace multiple operators with custom implementations, consider operator fusion opportunities (combining multiple operators into a single kernel, for example, combining matmul+relu), or algorithmic changes (such as online softmax). You are only limited by your imagination.\n
 """
