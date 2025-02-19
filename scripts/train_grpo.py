@@ -23,12 +23,15 @@ class TrainingConfig(Config):
         # GRPO configuration
         self.num_generations = 2  # Number of generations per prompt
         self.beta = 0.01  # KL coefficient
-        self.temperature = 0.9
+        self.temperature = 0.6
         
         # Training configuration
         self.num_epochs = 10
         self.batch_size = 1
         self.gradient_accumulation_steps = 1
+        self.gradient_checkpointing = True
+        self.use_vllm = True
+        self.vllm_gpu_memory_utilization = 0.7
         
         # Dataset configuration
         self.level = 1
@@ -108,9 +111,16 @@ def main(config: TrainingConfig):
 
     print(f"Dataset size: {len(dataset)}")
 
+    model_kwargs = dict(
+        attn_implementation="flash_attention_2",
+        torch_dtype="bfloat16",
+        use_cache=False if config.gradient_checkpointing else True,
+    )
+
     # Create GRPO config
     training_args = GRPOConfig(
         output_dir=config.output_dir,
+        model_init_kwargs=model_kwargs,
         learning_rate=config.learning_rate,
         num_train_epochs=config.num_epochs,
         per_device_train_batch_size=config.batch_size,
@@ -121,7 +131,8 @@ def main(config: TrainingConfig):
         temperature=config.temperature,
         beta=config.beta,
         bf16=True,
-        # use_vllm=True
+        use_vllm=config.use_vllm,
+        vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization
     )
 
     if config.full_finetune:

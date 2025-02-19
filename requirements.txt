@@ -11,3 +11,7 @@ accelerate
 bitsandbytes
 wandb
 trl
+peft
+vllm
+flash_attn
+deepspeed
