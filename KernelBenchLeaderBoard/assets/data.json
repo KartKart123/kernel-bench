@@ -1,0 +1,2323 @@
+{
+    "Level 1: 1_Square_matrix_multiplication_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.16857142857142854,
+            "file": "fa3e10d50ee22fd656c8e4767b3f5157"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.12591463414634146,
+            "file": "569bba6d335b9b6c28ffa67754016cc2"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.12218934911242603,
+            "file": "46f72fff010038678d235a6890ce5660"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.12182890855457226,
+            "file": "9789b9b98570ca983bb3688b7ea7f1a4"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.12076023391812865,
+            "file": "43384f24d090f7ba0c6eb09d52042677"
+        }
+    ],
+    "Level 1: 2_Standard_matrix_multiplication_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.16706827309236946,
+            "file": "d5e8b955452b19c73a2acc9f8372d306"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.16706827309236946,
+            "file": "410a2c475a4e782305866560a9d18b93"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.12492492492492492,
+            "file": "5c2c13a8d9d62c20aaa7d4fc71a58456"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.12380952380952381,
+            "file": "55a960be976d3aabf39b92bf62f56e08"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.12271386430678465,
+            "file": "06efa980bb294314d8f5a3572dc36c0b"
+        }
+    ],
+    "Level 1: 3_Batched_matrix_multiplication": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.17987152034261242,
+            "file": "d0c502aa627e20a3de8e80dbdc8d2ef0"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.17967914438502675,
+            "file": "f434009b50ee0d0e2d8dc4085a2d3188"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.17337461300309598,
+            "file": "f555597f449854019286eeb25e486831"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.13333333333333333,
+            "file": "fa411468876fb00118509b3696b76e50"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.12000000000000001,
+            "file": "cff31c6f5150f2af1da4e30106868c2b"
+        }
+    ],
+    "Level 1: 4_Matrix_vector_multiplication_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8947368421052632,
+            "file": "ace75607eb636186cc05385c61d181c8"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.06111111111111111,
+            "file": "f39c09537d9b5ca536c3ebaf54bd7083"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.03987206823027718,
+            "file": "150e099fba211de3eec96cdccae6b1c8"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.013550724637681158,
+            "file": "adf9f53ad573655d82502030e8a650f0"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.013550724637681158,
+            "file": "ccd72b8343ad84a34f3ffa848745c6c5"
+        }
+    ],
+    "Level 1: 5_Matrix_scalar_multiplication": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.692436974789916,
+            "file": "5a8524b63a79d7dfb2085a8f82597b96"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.692436974789916,
+            "file": "96dc135ff01496fe288305cf8aa12831"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.692436974789916,
+            "file": "6c7811f42a227d163ca7c25fcd46e92f"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.48470588235294115,
+            "file": "ea6762f8feb748ef86c359e0385722b7"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.48187134502923973,
+            "file": "aae17c85fd1951bdbaaffeb6d0e78379"
+        }
+    ],
+    "Level 1: 6_Matmul_with_large_K_dimension_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.1616867469879518,
+            "file": "5a11f55d9e36f2b68b5774c540201de9"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.15938242280285037,
+            "file": "25a04d6af9622bd4bcfc06416ce38cf7"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.11529209621993128,
+            "file": "38f01ff06c25dde5e6dbae21b64c539b"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.11509433962264151,
+            "file": "63ce524dc1ee540b04b253632a2c0c44"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.04443708609271524,
+            "file": "212e86ce6fb0b15f0d9223db64d4a5ce"
+        }
+    ],
+    "Level 1: 7_Matmul_with_small_K_dimension_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.3932038834951456,
+            "file": "1143f5a65506760015e6c3f06a283f87"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.31952662721893493,
+            "file": "667590b0bf2b3ffd899dba0a9c6925e8"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.3145631067961165,
+            "file": "f26009112f4033dfa1373c5f8e3600eb"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.3145631067961165,
+            "file": "1d37e40c1f044038f158b39b90abdf92"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.10728476821192054,
+            "file": "8f842a8c8fb84811ae6ca49a12dea5e3"
+        }
+    ],
+    "Level 1: 8_Matmul_with_irregular_shapes_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.22327790973871733,
+            "file": "175f44b0ad194769197ecf985280ba71"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.1339031339031339,
+            "file": "6caf3b209ab46b0906a6a5460fb22b2d"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.1325811001410437,
+            "file": "c69c5cae65fbccc93904a4eef8bd08d6"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.13128491620111735,
+            "file": "837341ff0212df97b7bce0ec928390f9"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.12754409769335143,
+            "file": "ed46bf3a2af5bf7d6ad49d8538f276b0"
+        }
+    ],
+    "Level 1: 9_Tall_skinny_matrix_multiplication_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6055900621118012,
+            "file": "bfe7cc072b506a9a376bb0b68acdf936"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.5891238670694864,
+            "file": "db2634b7717820c66a4580c122b6df20"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5838323353293413,
+            "file": "9f687ffb8ad3771e29889e2243a4a7ed"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5735294117647058,
+            "file": "eca38840f3896a8488d5efa1a03f10f9"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.34210526315789475,
+            "file": "51af1c56b3995b5982714f3a1e872235"
+        }
+    ],
+    "Level 1: 10_3D_tensor_matrix_multiplication": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.20496083550913838,
+            "file": "8f8e6d114217c821c325b7d98d924fde"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.07733990147783251,
+            "file": "48f3a381f928de920b7afa707e135321"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.020739762219286657,
+            "file": "73ed29720615018491f4989e081cb09e"
+        }
+    ],
+    "Level 1: 11_4D_tensor_matrix_multiplication": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.09314720812182742,
+            "file": "aaaddcbd8229b7c4685f9fd7f698db14"
+        }
+    ],
+    "Level 1: 12_Matmul_with_diagonal_matrices_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 13.224299065420562,
+            "file": "bfe828551c4ebbde9b51ca043813270f"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 13.162790697674419,
+            "file": "ff38bafb4225e9c1c23dea2ec66dfaa8"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 10.481481481481481,
+            "file": "2ce51c7b31598a95d46e3d16b12c3a9f"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 10.44280442804428,
+            "file": "5e3a6a9f95289dea4257dde4cb74b7e0"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 2.695238095238095,
+            "file": "7697341f2468aded490677226ba11339"
+        }
+    ],
+    "Level 1: 13_Matmul_for_symmetric_matrices": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.2134020618556701,
+            "file": "501e3234832775ffcfae623f5b748946"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.14838709677419354,
+            "file": "f83ebb44637f552e8eb5c7a09fca2a12"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.14577464788732394,
+            "file": "b3472c564864c01c8b641f2414f516ae"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.14425087108013937,
+            "file": "efab76147592a982d6e2f2fb1363fa83"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.04019417475728155,
+            "file": "95115494d8432073de8c6589b358240a"
+        }
+    ],
+    "Level 1: 14_Matmul_for_upper_triangular_matrices": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.5695732838589982,
+            "file": "e2b0ae1ef97af0cb5e2f34575396cc87"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.5695732838589982,
+            "file": "33dc20b50a6700a7c79b78735b82b67d"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.566420664206642,
+            "file": "6bca0e30ce8eabd31098336d29ff3145"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5581818181818181,
+            "file": "777ef46f2aa51bb800e6f9b0d04b4463"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.281651376146789,
+            "file": "0cf915832685374a0ee0a5b70e80f8e4"
+        }
+    ],
+    "Level 1: 15_Matmul_for_lower_triangular_matrices": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.49358974358974356,
+            "file": "d487705502c59a7e12c5d529389d4ae1"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.3273113708820404,
+            "file": "72127ff7453b5d8649d33d3467061904"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.32116788321167883,
+            "file": "49d56cdfb67e81cc3343c0b320865579"
+        }
+    ],
+    "Level 1: 16_Matmul_with_transposed_A": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.15564202334630353,
+            "file": "5b9f23bf5de29d3169d0112d6f033da8"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.12461059190031154,
+            "file": "b8b5a38ebca1c5ff68e535cd507b53fb"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.1142857142857143,
+            "file": "caa4f890b28f52530f688fde6e017ae3"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.11363636363636365,
+            "file": "b0e6c9265435d1c9e313696834887136"
+        }
+    ],
+    "Level 1: 17_Matmul_with_transposed_B": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.2133587786259542,
+            "file": "a8894c713f29cc848be2ab2f9daeeb29"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.040802919708029205,
+            "file": "700714668235d5d4c0c4797f8c6e5091"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.040802919708029205,
+            "file": "fb9f3c86c4a2ee7a4bfc028b8b2169c8"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.040802919708029205,
+            "file": "220163090b4072e55d17a63ae507e7f3"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.040802919708029205,
+            "file": "1a7f7d04f85731b46595a25d4b45866b"
+        }
+    ],
+    "Level 1: 18_Matmul_with_transposed_both": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.15992509363295881,
+            "file": "8944af6d73f6b3e3322beb42ee20b62c"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.03234848484848485,
+            "file": "97dd49ea4500812e69b12399b3990a5c"
+        }
+    ],
+    "Level 1: 19_ReLU": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.5842105263157895,
+            "file": "954990886e1c344fd8a51c2325bcf40a"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5692307692307692,
+            "file": "a72a4cc57898ace50d3820a2a9681283"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.5606060606060606,
+            "file": "9df22dfc8d70b6c23acbb03ab89088fc"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.555,
+            "file": "bfc9bf01f661f5183dd7053a61ef3d42"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.5467980295566504,
+            "file": "254ceb9bb0a0eecbce00d00f08d2fa80"
+        }
+    ],
+    "Level 1: 20_LeakyReLU": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.7070063694267517,
+            "file": "101159b6e20d523e3d679c04d728d3b3"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.6032608695652174,
+            "file": "7e70c21d4c53727251c91ad009c2d226"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5842105263157895,
+            "file": "14bbc0e69053246d9a5e927eb2da4e57"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.5811518324607331,
+            "file": "ab024f5110c0bb3b16b6450962535cf9"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.5692307692307692,
+            "file": "e72ba29aa316c6ef5558b49d67c21c7e"
+        }
+    ],
+    "Level 1: 21_Sigmoid": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0,
+            "file": "93a2f7cf034d028528b25a3cf31098c7"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.7115384615384616,
+            "file": "00c424d06db7b34413482825293508a7"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.6686746987951807,
+            "file": "16c14baa208daf200bd39d56acbc38f9"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.6132596685082873,
+            "file": "c299f223566a4a9827147125e826676b"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5904255319148937,
+            "file": "eed6773808a3c04f48a25173a1a4b985"
+        }
+    ],
+    "Level 1: 22_Tanh": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6204968944099379,
+            "file": "2ab3f72322e28d7422c797ed4e35befa"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5203125000000001,
+            "file": "561a4b0447ab81ef386464bb9d494ec3"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.5176165803108809,
+            "file": "02ac7e28da8d1dea0316dfb84aaa5208"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.5123076923076924,
+            "file": "489a6260970ef5a9843ac3b852a3c5ac"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5123076923076924,
+            "file": "c5a8392f0adc3e827cb33ef340ab65ad"
+        }
+    ],
+    "Level 1: 23_Softmax": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.48458149779735676,
+            "file": "de265988b79000e36633554d5c30a4f6"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.3188405797101449,
+            "file": "4cb6c06f6915b1ca53c69d86e9e9daa5"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.2857142857142857,
+            "file": "10f6501e52c5573cb8c41c2aee193f87"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.004680851063829787,
+            "file": "4f9be466c3f881d242481bf95a8ae70a"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.004545454545454545,
+            "file": "801a02ba5558f9ae2f0dfe94811acd4b"
+        }
+    ],
+    "Level 1: 24_LogSoftmax": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.02618510158013544,
+            "file": "e5394f86e5efd0966f5786d3ae4e64fd"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.004603174603174603,
+            "file": "a2c9bfd090804565a7c6a0f95ce4242e"
+        }
+    ],
+    "Level 1: 25_Swish": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9685534591194969,
+            "file": "0088bf5776569da188867f07b014171b"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.8279569892473119,
+            "file": "e67a4598992463c227aec19f432caa15"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.7857142857142858,
+            "file": "8010ec323412b2c940250f4de19bee6e"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7777777777777778,
+            "file": "b06403cf8306761aa9b53f9cb912f633"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.7738693467336684,
+            "file": "703bf110c2e3ca07605fb85c0e0f97fa"
+        }
+    ],
+    "Level 1: 26_GELU_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6198830409356725,
+            "file": "3b21ab07392ddebe0909068b00be07cf"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5549738219895288,
+            "file": "b459b53f3f7e8f94854a871f08481af8"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5463917525773195,
+            "file": "6c0e0a2736bfe6cceffe5bd4aee94e1d"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.1464088397790055,
+            "file": "0b439d49e02a9fef6503f6deb134b95c"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.14580467675378267,
+            "file": "71d33951dc759b69c606d154717e4c7c"
+        }
+    ],
+    "Level 1: 27_SELU_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.6903225806451613,
+            "file": "0f37198504ce649a8af14b33c99b0692"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.656441717791411,
+            "file": "f9d366f8d334b5bbd433f500978810de"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5544041450777202,
+            "file": "b46b0aa5fc8d32437089f04d0a038d20"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5297029702970297,
+            "file": "9247bb69497d0618afd4d23381b7c8d7"
+        }
+    ],
+    "Level 1: 28_HardSigmoid": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6545454545454545,
+            "file": "1ddc62eccd4350b88946d15f15a9d4d4"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5806451612903226,
+            "file": "dc2c4e53d66672c11dfb2f0cd1145f38"
+        }
+    ],
+    "Level 1: 29_Softplus": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6855345911949685,
+            "file": "7f374df31cb8124ecb83d724d9280379"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.6055555555555556,
+            "file": "be3931f0601349baed0750f87b52155b"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5956284153005464,
+            "file": "0246ec1e8c743f4123a8e804f6e1f7e3"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5706806282722513,
+            "file": "1d467667462362c4e461f349bc8f197f"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5677083333333334,
+            "file": "75e373248b8c840b9c373dbe2f7f7cab"
+        }
+    ],
+    "Level 1: 30_Softsign": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.4400000000000002,
+            "file": "7f90cb708543baf9fcff9d54cd88bd55"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.263157894736842,
+            "file": "4f8b3ac4371ef4d9f6323bfcaf964caa"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 1.142857142857143,
+            "file": "fcbbfeadfadae27f3d8554d1a01ce82f"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 1.1250000000000002,
+            "file": "fbc0cf3d06218e390222768b7196a015"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 1.1020408163265307,
+            "file": "4b8dd97f8140b83c4d578fe0a6118e9f"
+        }
+    ],
+    "Level 1: 31_ELU": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.69375,
+            "file": "c68f69496c03e09c431aed50b5f0e652"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6686746987951807,
+            "file": "5c98464e5fbf9105d66daa5605acbda6"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5967741935483871,
+            "file": "973da2ecca70bd92d3873e28e308c3ea"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5811518324607331,
+            "file": "197fcc1b55c73ace77513fc2cbc8cd51"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.5721649484536082,
+            "file": "81c305522ae4e66f8716df0cd24b6882"
+        }
+    ],
+    "Level 1: 32_HardTanh": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9470198675496688,
+            "file": "d0ab3bbca4fb5eac96882789ae49410f"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9108280254777071,
+            "file": "8b3062f61b2cb9383c2a16becbc5ed1d"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.89375,
+            "file": "c5695e25c8003e9bac09b6c7a7e8bb37"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.7566137566137566,
+            "file": "167a18978646cf2e18d78c645096d243"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.7371134020618556,
+            "file": "1f77406bfe497caef23d6bd36ba7293f"
+        }
+    ],
+    "Level 1: 33_BatchNorm": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.0416666666666667,
+            "file": "53843c6d7e658b779ede4f884796539a"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 1.0416666666666667,
+            "file": "29b2aa6fa8f082cd6eab4e59d75a0ef0"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6157635467980296,
+            "file": "c91590c85508b486d68ccff7f8bab616"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.3272251308900524,
+            "file": "b81b365e6cb4ebd557526db85772e4ae"
+        }
+    ],
+    "Level 1: 34_InstanceNorm": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.050420168067227,
+            "file": "deabfe1e4d3950f5686764878f1f83ed"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.8116883116883117,
+            "file": "bbdc0ee575a7a912f425caa60acd80ce"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.08680555555555555,
+            "file": "72f4f9c36fe9e65d8bfc86c1e272950f"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.03342245989304813,
+            "file": "bd592d2043a1bcc368c6706d69567700"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.0013766519823788547,
+            "file": "1dde64c9d5d16fdb97f30f50eff1ec96"
+        }
+    ],
+    "Level 1: 35_GroupNorm_": [],
+    "Level 1: 36_RMSNorm_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0049019607843137,
+            "file": "01a18c81f2a6ee19ecd7c13353979ff5"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5297157622739017,
+            "file": "3554078ec6a9c7e34de22ac726c7fcc3"
+        }
+    ],
+    "Level 1: 37_FrobeniusNorm_": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.0084033613445378,
+            "file": "210328ec64c942ec0c70e5ba0c4f203d"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.0084033613445378,
+            "file": "d414b2817d0cf160cadb6e1cd948de4b"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 1.0,
+            "file": "0db5d1b9a31b11d36758614f4f561bc1"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9917355371900827,
+            "file": "616422247a325dc6c73d1dcf2b837da1"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.7741935483870968,
+            "file": "3c3ce6f229ae6e66ec9c7fe0dfd6c662"
+        }
+    ],
+    "Level 1: 38_L1Norm_": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.9382716049382717,
+            "file": "20198b054c2cfb53ab16f32c16004479"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.061788617886178863,
+            "file": "8a41bb81cdb25459694d4b10ac7c6c4f"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.04681724845995894,
+            "file": "8881c8f9bec0cc44688487bf4c624605"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.015405405405405406,
+            "file": "9f4f619ba223c3a4b3bf66c44dbf2711"
+        }
+    ],
+    "Level 1: 39_L2Norm_": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.3780487804878048,
+            "file": "0c71329febf9679c65c1014915807733"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.09117647058823529,
+            "file": "56ed7cb79b8ab4a9dae8e85ef379b4a3"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.028615384615384612,
+            "file": "2ea10fbd9222f886e493cdc67b3b0f2b"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.012483221476510067,
+            "file": "33848752ca2518f8c9fcb5beba347f51"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.0124,
+            "file": "4b97abde30e9f54734d8ed4ca2e1bfe5"
+        }
+    ],
+    "Level 1: 40_LayerNorm": [
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.07350835322195705,
+            "file": "c16fd571edb42c7a931147efe5f8c4e8"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.013658536585365854,
+            "file": "f8c57e5701cb89874fcfc2fc3046da2e"
+        }
+    ],
+    "Level 1: 41_Max_Pooling_1D": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0635838150289016,
+            "file": "dd46e710656a136b7c9e6e4dc0bea21f"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9787234042553191,
+            "file": "07f5b71bcff1335153bdad8b7ad0ab5e"
+        }
+    ],
+    "Level 1: 42_Max_Pooling_2D": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1133603238866396,
+            "file": "de2854de32bc3f0e90076d4ce27fced5"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.8957654723127035,
+            "file": "34406f910de02571e644e9dfd699e722"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.3420398009950249,
+            "file": "ca1c6a5db9f97f3e7a93c3e42ca7fd82"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.33908754623921084,
+            "file": "53513579a8366516aa8ab980dae48f63"
+        }
+    ],
+    "Level 1: 43_Max_Pooling_3D": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.0342920353982301,
+            "file": "141c57d16d78ce477a4708b384069c06"
+        }
+    ],
+    "Level 1: 44_Average_Pooling_1D": [],
+    "Level 1: 45_Average_Pooling_2D": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9334811529933481,
+            "file": "c6ba51c6586aa73b41ad6ef53f0782d7"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.9293598233995585,
+            "file": "d736485907c55f404a2cde4623e8130d"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.9273127753303965,
+            "file": "f2d441d252db0717dc1a0c55ff8c9a7f"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9252747252747252,
+            "file": "000d6d68f761b0f980cc21ae59e83356"
+        }
+    ],
+    "Level 1: 46_Average_Pooling_3D": [],
+    "Level 1: 47_Sum_reduction_over_a_dimension": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5394736842105263,
+            "file": "6bf9975824fa7fdc5b78d6066cfb3ea5"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.45054945054945056,
+            "file": "ca3d78139c9f8df5cd126bbad07f02bc"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.4456521739130435,
+            "file": "fc7de0e30269f56e349bbf34497efc30"
+        }
+    ],
+    "Level 1: 48_Mean_reduction_over_a_dimension": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6169154228855721,
+            "file": "e2d8d5c3f4956a0542763a647b8aca5e"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.6138613861386139,
+            "file": "2cf0f1eb410bae56b3f4bb51d5aed98a"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.5636363636363636,
+            "file": "4496684afb665391ed1affb231c86119"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.5462555066079294,
+            "file": "dd802f09e073225064f5b31abfe1daa4"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5414847161572052,
+            "file": "132dcfec664d76c68b028649008d8bf0"
+        }
+    ],
+    "Level 1: 49_Max_reduction_over_a_dimension": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.0102564102564102,
+            "file": "128ecf68bbb86871c17de09c5fd5091d"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9949494949494948,
+            "file": "9b65a19588b1f9d2f8eaaea4c2d87e2a"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9849999999999999,
+            "file": "350f4f318732cf58311ee00d7ec4932e"
+        }
+    ],
+    "Level 1: 50_Product_reduction_over_a_dimension": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6256410256410256,
+            "file": "c8d6d5f8f3aab46b1cb7d8aa295ee479"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.35672514619883045,
+            "file": "ff8d13bf129f7ab87bf51dc58d00e9cf"
+        }
+    ],
+    "Level 1: 51_Argmax_over_a_dimension": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.897560975609756,
+            "file": "56b211ad1b5a14c5cd241a9d27fcaa38"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.5041095890410959,
+            "file": "c5d94bd41dd86466244a4496051d399b"
+        }
+    ],
+    "Level 1: 52_Argmin_over_a_dimension": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.8685446009389671,
+            "file": "97623c01d51288fa2fa899725423daeb"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8525345622119815,
+            "file": "5e7818e2496412846a52cc2d4e25a29e"
+        }
+    ],
+    "Level 1: 53_Min_reduction_over_a_dimension": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.0,
+            "file": "f8b9a2e4da901699f4d5277f7011d431"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.9800995024875622,
+            "file": "2e4b4fc75fe49b6bf90b557aaec955d1"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8565217391304347,
+            "file": "52b1bfd70fedf576e3d3900eb83dde8c"
+        }
+    ],
+    "Level 1: 54_conv_standard_3D__square_input__square_kernel": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.28860759493670884,
+            "file": "8a584044af6a0c16d1d82471f580073e"
+        }
+    ],
+    "Level 1: 55_conv_standard_2D__asymmetric_input__square_kernel": [],
+    "Level 1: 56_conv_standard_2D__asymmetric_input__asymmetric_kernel": [],
+    "Level 1: 57_conv_transposed_2D__square_input__square_kernel": [],
+    "Level 1: 58_conv_transposed_3D__asymmetric_input__asymmetric_kernel": [],
+    "Level 1: 59_conv_standard_3D__asymmetric_input__square_kernel": [],
+    "Level 1: 60_conv_standard_3D__square_input__asymmetric_kernel": [],
+    "Level 1: 61_conv_transposed_3D__square_input__square_kernel": [],
+    "Level 1: 62_conv_standard_2D__square_input__asymmetric_kernel": [],
+    "Level 1: 63_conv_standard_2D__square_input__square_kernel": [],
+    "Level 1: 64_conv_transposed_1D": [],
+    "Level 1: 65_conv_transposed_2D__square_input__asymmetric_kernel": [],
+    "Level 1: 66_conv_standard_3D__asymmetric_input__asymmetric_kernel": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.2698979591836735,
+            "file": "e84744fc830274fe70112251046186a9"
+        }
+    ],
+    "Level 1: 67_conv_standard_1D": [],
+    "Level 1: 68_conv_transposed_3D__square_input__asymmetric_kernel": [],
+    "Level 1: 69_conv_transposed_2D__asymmetric_input__asymmetric_kernel": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.01080246913580247,
+            "file": "158cb06d83b7be66788f4a6e1a0c019c"
+        }
+    ],
+    "Level 1: 70_conv_transposed_3D__asymmetric_input__square_kernel": [],
+    "Level 1: 71_conv_transposed_2D__asymmetric_input__square_kernel": [],
+    "Level 1: 72_conv_transposed_3D_asymmetric_input_asymmetric_kernel___strided_padded_grouped_": [],
+    "Level 1: 73_conv_transposed_3D_asymmetric_input_square_kernel__strided_padded__grouped": [],
+    "Level 1: 74_conv_transposed_1D_dilated": [],
+    "Level 1: 75_conv_transposed_2D_asymmetric_input_asymmetric_kernel_strided__grouped____padded____dilated__": [],
+    "Level 1: 76_conv_standard_1D_dilated_strided__": [],
+    "Level 1: 77_conv_transposed_3D_square_input_square_kernel___padded____dilated____strided__": [],
+    "Level 1: 78_conv_transposed_2D_asymmetric_input_asymmetric_kernel___padded__": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.030886075949367087,
+            "file": "344116d12fa7ae041192fae86ee05136"
+        }
+    ],
+    "Level 1: 79_conv_transposed_1D_asymmetric_input_square_kernel___padded____strided____dilated__": [],
+    "Level 1: 80_conv_standard_2D_square_input_asymmetric_kernel___dilated____padded__": [],
+    "Level 1: 81_conv_transposed_2D_asymmetric_input_square_kernel___dilated____padded____strided__": [],
+    "Level 1: 82_conv_depthwise_2D_square_input_square_kernel": [],
+    "Level 1: 83_conv_depthwise_2D_square_input_asymmetric_kernel": [],
+    "Level 1: 84_conv_depthwise_2D_asymmetric_input_square_kernel": [],
+    "Level 1: 85_conv_depthwise_2D_asymmetric_input_asymmetric_kernel": [],
+    "Level 1: 86_conv_depthwise_separable_2D": [],
+    "Level 1: 87_conv_pointwise_2D": [],
+    "Level 1: 88_MinGPTNewGelu": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 4.1525423728813555,
+            "file": "870d29e1e019b1f97db63a652c8fb6ce"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 2.378640776699029,
+            "file": "bdfd3ef17739c84c448c0ad439ae5945"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 2.0646067415730336,
+            "file": "178d0cf8c3a15d2cf66660ac838e787e"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.9130434782608695,
+            "file": "49425f291574852ad8c64189afb2ac5f"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.8428899082568807,
+            "file": "db925e7dcbafff98c19dc836bc134595"
+        }
+    ],
+    "Level 1: 89_cumsum": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.09686274509803922,
+            "file": "dd612c07f2d001388c87058957878a9b"
+        }
+    ],
+    "Level 1: 90_cumprod": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.16170212765957448,
+            "file": "1cb4b0e0583753ec6082def6157e6d03"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.05588235294117647,
+            "file": "4ccb6f1a4a72eec28be140479b1d6ded"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.03261802575107296,
+            "file": "e1dbbc9e1eb3b82ba3835fd9ccd3739b"
+        }
+    ],
+    "Level 1: 91_cumsum_reverse": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.20927152317880798,
+            "file": "1a255ec793dba003efba862b50c9a35d"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.11660516605166052,
+            "file": "1e7d6a5de60d3299d763e6b5ed746aaa"
+        }
+    ],
+    "Level 1: 92_cumsum_exclusive": [],
+    "Level 1: 93_masked_cumsum": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.05884773662551441,
+            "file": "fd7ac3c83aa37447f2a8b806d5fc5b6e"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.05766129032258065,
+            "file": "5ea02898b95a375728443089898de57f"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.029213483146067417,
+            "file": "afa9f6431c21c5e2524bfeea0052e016"
+        }
+    ],
+    "Level 1: 94_MSELoss": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.8118811881188118,
+            "file": "a24305e58ff7f3331aaa27dccb5b77c7"
+        }
+    ],
+    "Level 1: 95_CrossEntropyLoss": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 2.0672268907563023,
+            "file": "ee6802ec45cb8b749aebe6ca2a11b3a9"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.870722433460076,
+            "file": "001ec9fad3061ac99a029fee6b6a5624"
+        }
+    ],
+    "Level 1: 96_HuberLoss": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.9420849420849422,
+            "file": "5c11f68b1d5fd6132320ac10d492201b"
+        },
+        {
+            "display_name": "llama-3.1-70b",
+            "torch_speedup": 0.7922077922077922,
+            "file": "bf5c7dc0ff7295484163c7a47cb50c8d"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.7093023255813954,
+            "file": "aaf2da8ffa4dcda5e164717316f92848"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6703296703296704,
+            "file": "db58fb0ce5e2d9b7d0b204a12868bc7b"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.583732057416268,
+            "file": "f695f0143e1985400d86b07db1cfa207"
+        }
+    ],
+    "Level 1: 97_CosineSimilarityLoss": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 2.7683397683397684,
+            "file": "90e820a72616060d6c9d51a3b408488e"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.1636986301369863,
+            "file": "51d55c12bc6c0ae08f32d1b7bac99971"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.1633257403189066,
+            "file": "d38600565a622eae0832252f525133dc"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.1618510158013544,
+            "file": "ff748757a2181e7812a61ada8989979d"
+        },
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.1604026845637584,
+            "file": "f0026e26083bc46f5305241f4feea086"
+        }
+    ],
+    "Level 1: 98_KLDivLoss": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 1.0246085011185684,
+            "file": "6b7843e5669043384d302aca35e4b432"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.07067901234567901,
+            "file": "d669a98deb4e9b02920ed27b00896685"
+        }
+    ],
+    "Level 1: 99_TripletMarginLoss": [
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.08629283489096573,
+            "file": "b69b00c48d1f6bd38fd02218dcb4b515"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.07971223021582734,
+            "file": "3db6c41dbd15c3097326df510162a1d5"
+        }
+    ],
+    "Level 1: 100_HingeLoss": [],
+    "Level 2: 1_Conv2D_ReLU_BiasAdd": [],
+    "Level 2: 2_ConvTranspose2d_BiasAdd_Clamp_Scaling_Clamp_Divide": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.1045751633986929,
+            "file": "26f0183b19957d1f65392223a49fa606"
+        }
+    ],
+    "Level 2: 3_ConvTranspose3d_Sum_LayerNorm_AvgPool_GELU": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0217391304347827,
+            "file": "8de1e889bf899e0bc0cb0786cacbc029"
+        }
+    ],
+    "Level 2: 4_Conv2d_Mish_Mish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.794074074074074,
+            "file": "4566c00e85d30e609539ba6765c7bca9"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6592865928659287,
+            "file": "5b0bef3f2de35c34aa482d09a16f78b6"
+        }
+    ],
+    "Level 2: 5_ConvTranspose2d_Subtract_Tanh": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.956140350877193,
+            "file": "f78b255341f4b2dfac94de67e4bfd7fe"
+        }
+    ],
+    "Level 2: 6_Conv3d_Softmax_MaxPool_MaxPool": [],
+    "Level 2: 7_Conv3d_ReLU_LeakyReLU_GELU_Sigmoid_BiasAdd": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 2.3269230769230766,
+            "file": "d0d792daeb6fcee0a4d0e1b163978c0f"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 2.1415929203539825,
+            "file": "9ed2d6a40cc66d8c5736c741e40d06bb"
+        }
+    ],
+    "Level 2: 8_Conv3d_Divide_Max_GlobalAvgPool_BiasAdd_Sum": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.3333333333333333,
+            "file": "467d44cbf4e20696ae3d2ee956b11413"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0285714285714287,
+            "file": "83677818f7e148301f3f7e2e8f3ec5aa"
+        }
+    ],
+    "Level 2: 9_Matmul_Subtract_Multiply_ReLU": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 1.8945147679324896,
+            "file": "c403c5d4457aeb03efacda5a7ddda1ac"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8178506375227688,
+            "file": "65a7905a4c10b9b47a068a680f436755"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7781629116117851,
+            "file": "a11c81f4e2670d73be9d3cf339cbd3bb"
+        }
+    ],
+    "Level 2: 10_ConvTranspose2d_MaxPool_Hardtanh_Mean_Tanh": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9751243781094527,
+            "file": "c999d1f304fa11c8b68837441030be75"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9158878504672898,
+            "file": "fec2d71c458b31f9ae81c8025bb29034"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.8828828828828829,
+            "file": "30f6298d8194eba7eb69066eac5a7435"
+        }
+    ],
+    "Level 2: 11_ConvTranspose2d_BatchNorm_Tanh_MaxPool_GroupNorm": [],
+    "Level 2: 12_Gemm_Multiply_LeakyReLU": [],
+    "Level 2: 13_ConvTranspose3d_Mean_Add_Softmax_Tanh_Scaling": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.016,
+            "file": "8e36a436125bac0eb3efa425e8cff453"
+        }
+    ],
+    "Level 2: 14_Gemm_Divide_Sum_Scaling": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 3.17032967032967,
+            "file": "3b400dd6bfedc298e2d95b1b95b73c6f"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 2.6589861751152073,
+            "file": "a8c06c51214c48824bcec0b02484b4a6"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.3294930875576036,
+            "file": "58cbdfed03b5aece7e93b3dfff4dd26d"
+        }
+    ],
+    "Level 2: 15_ConvTranspose3d_BatchNorm_Subtract": [],
+    "Level 2: 16_ConvTranspose2d_Mish_Add_Hardtanh_Scaling": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1278538812785388,
+            "file": "820a9dd9b8b47855eb59be49cf76a23c"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.1227272727272728,
+            "file": "0cfe2f39a20b4b5655c6f671e7821da4"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.0510638297872341,
+            "file": "d357b08af951bf5a416ec049839efaa3"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7967741935483871,
+            "file": "bd7e11aea310014fc55109c447bdac46"
+        }
+    ],
+    "Level 2: 17_Conv2d_InstanceNorm_Divide": [],
+    "Level 2: 18_Matmul_Sum_Max_AvgPool_LogSumExp_LogSumExp": [],
+    "Level 2: 19_ConvTranspose2d_GELU_GroupNorm": [],
+    "Level 2: 20_ConvTranspose3d_Sum_ResidualAdd_Multiply_ResidualAdd": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.7497103128621088,
+            "file": "ecce74df42226c991c533ae3ede3de06"
+        }
+    ],
+    "Level 2: 21_Conv2d_Add_Scale_Sigmoid_GroupNorm": [],
+    "Level 2: 22_Matmul_Scale_ResidualAdd_Clamp_LogSumExp_Mish": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.1679389312977098,
+            "file": "a1d33b097080583f92b9ce225941b38e"
+        }
+    ],
+    "Level 2: 23_Conv3d_GroupNorm_Mean": [],
+    "Level 2: 24_Conv3d_Min_Softmax": [],
+    "Level 2: 25_Conv2d_Min_Tanh_Tanh": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.818918918918919,
+            "file": "77a6007e6c5e6611f1138533e8d61142"
+        }
+    ],
+    "Level 2: 26_ConvTranspose3d_Add_HardSwish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.5857142857142856,
+            "file": "b91851ffff9d8a5b6b5f17213b590578"
+        }
+    ],
+    "Level 2: 27_Conv3d_HardSwish_ReLU_Softmax_Mean": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1941176470588235,
+            "file": "935e535664be2dcea04fd1da66a88344"
+        }
+    ],
+    "Level 2: 28_BMM_InstanceNorm_Sum_ResidualAdd_Multiply": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7263636363636363,
+            "file": "6d5cf5dccb11b22bf9b89d0166860b10"
+        }
+    ],
+    "Level 2: 29_Matmul_Mish_Mish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1954887218045114,
+            "file": "3059d6ce31572401a42086cc89fb1528"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5047619047619047,
+            "file": "40b4e3b46f17d4a1ac3f8a9182672af2"
+        }
+    ],
+    "Level 2: 30_Gemm_GroupNorm_Hardtanh": [],
+    "Level 2: 31_Conv2d_Min_Add_Multiply": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.2083333333333333,
+            "file": "ca600a2999623112b0c35a7c35562ae9"
+        }
+    ],
+    "Level 2: 32_Conv2d_Scaling_Min": [],
+    "Level 2: 33_Gemm_Scale_BatchNorm": [],
+    "Level 2: 34_ConvTranspose3d_LayerNorm_GELU_Scaling": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.2878289473684211,
+            "file": "f6892b642a1c09163b65d96ce6017a73"
+        }
+    ],
+    "Level 2: 35_Conv2d_Subtract_HardSwish_MaxPool_Mish": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5554744525547445,
+            "file": "a06984591c5b600e317948cad2c31536"
+        }
+    ],
+    "Level 2: 36_ConvTranspose2d_Min_Sum_GELU_Add": [],
+    "Level 2: 37_Matmul_Swish_Sum_GroupNorm": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9645569620253165,
+            "file": "0374c496226e3dcff4e679c30db4cb70"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6864864864864865,
+            "file": "f6229bd74a206ff4aeaff1bf7b4d2766"
+        }
+    ],
+    "Level 2: 38_ConvTranspose3d_AvgPool_Clamp_Softmax_Multiply": [],
+    "Level 2: 39_Gemm_Scale_BatchNorm": [],
+    "Level 2: 40_Matmul_Scaling_ResidualAdd": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 1.0471512770137525,
+            "file": "7b558c6c999bf44da5f858a1e9ee4491"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7106666666666667,
+            "file": "337d400b3afb3b04e50517e111bd1b45"
+        }
+    ],
+    "Level 2: 41_Gemm_BatchNorm_GELU_GroupNorm_Mean_ReLU": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.4642857142857143,
+            "file": "ceeadf4b3ecbe74adfac1f687868cb99"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.4317343173431734,
+            "file": "6a251b42ceb4982220d8a741d85fc9b8"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.3823529411764706,
+            "file": "2b76a4c175e25dab70288f05ced2331d"
+        }
+    ],
+    "Level 2: 42_ConvTranspose2d_GlobalAvgPool_BiasAdd_LogSumExp_Sum_Multiply": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9420289855072463,
+            "file": "0513ce58f501f623e29c155843aa3667"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7182320441988951,
+            "file": "c69e18ced88a492a7db0111e2b6e4612"
+        }
+    ],
+    "Level 2: 43_Conv3d_Max_LogSumExp_ReLU": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0437956204379562,
+            "file": "2ec650be3ce953f1f0b3eb333e39c973"
+        }
+    ],
+    "Level 2: 44_ConvTranspose2d_Multiply_GlobalAvgPool_GlobalAvgPool_Mean": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 7.08245243128964,
+            "file": "fc7b0633e1f8dca6653f552f2eeef450"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.4564032697547684,
+            "file": "5d253962cec02ede89593f4b6c41f1e1"
+        }
+    ],
+    "Level 2: 45_Gemm_Sigmoid_Sum_LogSumExp": [],
+    "Level 2: 46_Conv2d_Subtract_Tanh_Subtract_AvgPool": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9707379134860051,
+            "file": "72fb29605e68f1cd0bd8984a8cd29687"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6254098360655739,
+            "file": "0c6c29fbfc86b0367b5d7c0e92aa62dc"
+        }
+    ],
+    "Level 2: 47_Conv3d_Mish_Tanh": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9752066115702479,
+            "file": "811501560c619b22c0ba965fe123a287"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.8137931034482758,
+            "file": "63bc909843d682146433bd99db4bfc2c"
+        }
+    ],
+    "Level 2: 48_Conv3d_Scaling_Tanh_Multiply_Sigmoid": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.8672566371681416,
+            "file": "06ba913982fa6a80b3abe14c7d72ee73"
+        }
+    ],
+    "Level 2: 49_ConvTranspose3d_Softmax_Sigmoid": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.4255102040816326,
+            "file": "d2263b47d30e75cbec9a51bee9ddb1b3"
+        }
+    ],
+    "Level 2: 50_ConvTranspose3d_Scaling_AvgPool_BiasAdd_Scaling": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1682242990654206,
+            "file": "3130954b7db15287dc2c85404dcd0299"
+        }
+    ],
+    "Level 2: 51_Gemm_Subtract_GlobalAvgPool_LogSumExp_GELU_ResidualAdd": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 2.5316455696202533,
+            "file": "f396531c036c51a74f5dfa6be70af7ec"
+        }
+    ],
+    "Level 2: 52_Conv2d_Activation_BatchNorm": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0263157894736843,
+            "file": "7e5f71efb2bbd3a5955ea4d74b5b9530"
+        }
+    ],
+    "Level 2: 53_Gemm_Scaling_Hardtanh_GELU": [],
+    "Level 2: 54_Conv2d_Multiply_LeakyReLU_GELU": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8237822349570201,
+            "file": "64e821c4d0b9deeca8b573257f9ffc66"
+        }
+    ],
+    "Level 2: 55_Matmul_MaxPool_Sum_Scale": [],
+    "Level 2: 56_Matmul_Sigmoid_Sum": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 1.7929292929292926,
+            "file": "37405ddfc45b48e6a8e3860ed65f573d"
+        }
+    ],
+    "Level 2: 57_Conv2d_ReLU_HardSwish": [],
+    "Level 2: 58_ConvTranspose3d_LogSumExp_HardSwish_Subtract_Clamp_Max": [],
+    "Level 2: 59_Matmul_Swish_Scaling": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7678883071553229,
+            "file": "2dc7837ca5fd2439e6f4ad61104cd402"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.3259259259259259,
+            "file": "e12ad9f2ea2ebd425083ede99500e926"
+        }
+    ],
+    "Level 2: 60_ConvTranspose3d_Swish_GroupNorm_HardSwish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1540983606557378,
+            "file": "3046bf5f29e21e21a08edd1958dd66d3"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 1.0570570570570572,
+            "file": "3e9f08a2aacf38d2a042fe83a8917b25"
+        }
+    ],
+    "Level 2: 61_ConvTranspose3d_ReLU_GroupNorm": [],
+    "Level 2: 62_Matmul_GroupNorm_LeakyReLU_Sum": [],
+    "Level 2: 63_Gemm_ReLU_Divide": [],
+    "Level 2: 64_Gemm_LogSumExp_LeakyReLU_LeakyReLU_GELU_GELU": [],
+    "Level 2: 65_Conv2d_AvgPool_Sigmoid_Sum": [],
+    "Level 2: 66_Matmul_Dropout_Mean_Softmax": [],
+    "Level 2: 67_Conv2d_GELU_GlobalAvgPool": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.5516666666666666,
+            "file": "a1152e0bc742fbaf96d5e7d392a09601"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.13427991886409735,
+            "file": "2e477fb5ab269d62226bf9bc499e5e50"
+        }
+    ],
+    "Level 2: 68_Matmul_Min_Subtract": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 1.08359133126935,
+            "file": "36b11ac9a911118927de63d0fc402de7"
+        }
+    ],
+    "Level 2: 69_Conv2d_HardSwish_ReLU": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7028112449799196,
+            "file": "48aaf53ddb918c10a270e493ac7b082d"
+        }
+    ],
+    "Level 2: 70_Gemm_Sigmoid_Scaling_ResidualAdd": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8818737270875764,
+            "file": "233ddd9aa230efbd6cc6f630ae6ff269"
+        }
+    ],
+    "Level 2: 71_Conv2d_Divide_LeakyReLU": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7893982808022924,
+            "file": "8a1bfb98aa19e7ba9d4dac1263dee6f4"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7327127659574468,
+            "file": "0ba0d2fde2d02e51ba083af194df5f1d"
+        }
+    ],
+    "Level 2: 72_ConvTranspose3d_BatchNorm_AvgPool_AvgPool": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.011784511784512,
+            "file": "0f0f4593eb1a6291561190071d51f733"
+        }
+    ],
+    "Level 2: 73_Conv2d_BatchNorm_Scaling": [],
+    "Level 2: 74_ConvTranspose3d_LeakyReLU_Multiply_LeakyReLU_Max": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.4315789473684213,
+            "file": "addd84d923cc8670b78e2e2556785aac"
+        }
+    ],
+    "Level 2: 75_Gemm_GroupNorm_Min_BiasAdd": [],
+    "Level 2: 76_Gemm_Add_ReLU": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.15064377682403432,
+            "file": "624f999ae38bf97da2628a03b42b8438"
+        }
+    ],
+    "Level 2: 77_ConvTranspose3d_Scale_BatchNorm_GlobalAvgPool": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.573076923076923,
+            "file": "ba65a80da4dc61d18603f5052bb7cb6c"
+        }
+    ],
+    "Level 2: 78_ConvTranspose3d_Max_Max_Sum": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0,
+            "file": "991d531c8712ee817ded9aef819a0e49"
+        }
+    ],
+    "Level 2: 79_Conv3d_Multiply_InstanceNorm_Clamp_Multiply_Max": [],
+    "Level 2: 80_Gemm_Max_Subtract_GELU": [],
+    "Level 2: 81_Gemm_Swish_Divide_Clamp_Tanh_Clamp": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.704109589041096,
+            "file": "c66d3e6d1aab0c31010754517bf6f87d"
+        }
+    ],
+    "Level 2: 82_Conv2d_Tanh_Scaling_BiasAdd_Max": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8188976377952756,
+            "file": "b2e7f9d9af0d6bfa121e0878f15171c1"
+        }
+    ],
+    "Level 2: 83_Conv3d_GroupNorm_Min_Clamp_Dropout": [],
+    "Level 2: 84_Gemm_BatchNorm_Scaling_Softmax": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.2971631205673759,
+            "file": "c42f48d3fe0d950cf16d86507ccbce38"
+        }
+    ],
+    "Level 2: 85_Conv2d_GroupNorm_Scale_MaxPool_Clamp": [],
+    "Level 2: 86_Matmul_Divide_GELU": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.17404255319148937,
+            "file": "87b3881e4fa7186e21daa2096a5045c2"
+        }
+    ],
+    "Level 2: 87_Conv2d_Subtract_Subtract_Mish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8502202643171807,
+            "file": "e664dbd2eedaa2ff2a4e15a1a51ae260"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5216216216216216,
+            "file": "cdc0eb950576b4c7b6987e1218ec2382"
+        }
+    ],
+    "Level 2: 88_Gemm_GroupNorm_Swish_Multiply_Swish": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7436893203883496,
+            "file": "926b4bdcf86bbba4e4989786b53bd3b5"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.5319444444444444,
+            "file": "4f17baefff29f2f2dd393fe69fce0d7e"
+        }
+    ],
+    "Level 2: 89_ConvTranspose3d_MaxPool_Softmax_Subtract_Swish_Max": [],
+    "Level 2: 90_Conv3d_LeakyReLU_Sum_Clamp_GELU": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 2.019230769230769,
+            "file": "447fac3129139e84230be00b8e0372d7"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.858407079646018,
+            "file": "8456550e8d7fcc5fe63afd38e2e79e8d"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7984790874524715,
+            "file": "a91894ad6d2d32978224c6e3920e7514"
+        }
+    ],
+    "Level 2: 91_ConvTranspose2d_Softmax_BiasAdd_Scaling_Sigmoid": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.2406639004149378,
+            "file": "8169a346b0dbdfe713929bb0b2cf61e5"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.3041709053916582,
+            "file": "88899497ff25940b62ce7d2977e23eb9"
+        }
+    ],
+    "Level 2: 92_Conv2d_GroupNorm_Tanh_HardSwish_ResidualAdd_LogSumExp": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.4699999999999998,
+            "file": "66a4e0b72ff76d92ca80971286fecd9f"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.24019607843137253,
+            "file": "d465c2e771dbde83db8db53830d4e39c"
+        }
+    ],
+    "Level 2: 93_ConvTranspose2d_Add_Min_GELU_Multiply": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1396011396011396,
+            "file": "6ee5348f457850a388eb35bebae7c38e"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 1.13314447592068,
+            "file": "ea7718b0424d6d1f46054d9fa6ede46e"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.881057268722467,
+            "file": "ea17525b8494878fd87fdc326f062424"
+        }
+    ],
+    "Level 2: 94_Gemm_BiasAdd_Hardtanh_Mish_GroupNorm": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9010526315789473,
+            "file": "0aff0fa815c177d241954ecf77ecd792"
+        }
+    ],
+    "Level 2: 95_Matmul_Add_Swish_Tanh_GELU_Hardtanh": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0915371329879102,
+            "file": "1201d0df62f7cb8f4992a955f6d761f3"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.5592920353982301,
+            "file": "44df808df2351535e5778b16868a48e7"
+        }
+    ],
+    "Level 2: 96_ConvTranspose3d_Multiply_Max_GlobalAvgPool_Clamp": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.9465648854961832,
+            "file": "0c7339531f3ae2d7f98aed2f9c74c8ed"
+        }
+    ],
+    "Level 2: 97_Matmul_BatchNorm_BiasAdd_Divide_Swish": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.8614678899082568,
+            "file": "e59a825aaad917c95dd6f5b4262026a2"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7512,
+            "file": "628029173791172e18f2b76c714f3c41"
+        }
+    ],
+    "Level 2: 98_Matmul_AvgPool_GELU_Scale_Max": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.323643410852713,
+            "file": "2168d6b725ca15b3b431fbb98534a4be"
+        }
+    ],
+    "Level 2: 99_Matmul_GELU_Softmax": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7604395604395604,
+            "file": "5c36dadcac0846f0a4bc95a39760ad9d"
+        }
+    ],
+    "Level 2: 100_ConvTranspose3d_Clamp_Min_Divide": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.1449275362318843,
+            "file": "38a685e6b146f9808f860ea8475856a1"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 1.0748299319727892,
+            "file": "5fbf335e54a047fdba71cf72bf595134"
+        }
+    ],
+    "Level 3: 1_MLP": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 1.0199999999999998,
+            "file": "bbec382fcf107cf63d130116b6cdb0a5"
+        }
+    ],
+    "Level 3: 2_ShallowWideMLP": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0351617440225036,
+            "file": "9d95fc56642884304db9c71484cda42c"
+        }
+    ],
+    "Level 3: 3_DeepNarrowMLP": [],
+    "Level 3: 4_LeNet5": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 1.322314049586777,
+            "file": "4f80ebb0657e05543d17fb5db74842ed"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8743169398907105,
+            "file": "f1afab3fdf6df4e071a7f8b043b5bc59"
+        }
+    ],
+    "Level 3: 5_AlexNet": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.6319018404907976,
+            "file": "1182496d8dd82ddcfec031b40606c972"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.13844086021505375,
+            "file": "92584f8bc6b1e65bdbf6f62f49d309ba"
+        }
+    ],
+    "Level 3: 6_GoogleNetInceptionModule": [],
+    "Level 3: 7_GoogleNetInceptionV1": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7162790697674419,
+            "file": "f92e0d7dafb57f7becbaac57213b83a9"
+        }
+    ],
+    "Level 3: 8_ResNetBasicBlock": [],
+    "Level 3: 9_ResNet18": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.7165775401069518,
+            "file": "a0652e5d1efe011c5f1d3ff54ac1ff06"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7089947089947091,
+            "file": "4cebab77388e8244844b212c768a3836"
+        }
+    ],
+    "Level 3: 10_ResNet101": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.723529411764706,
+            "file": "8da315e197ae25664c9c7397849bbd67"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6713973799126638,
+            "file": "b0ff8236c1df3e267153d79f1c1a8a9b"
+        }
+    ],
+    "Level 3: 11_VGG16": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8308227114716106,
+            "file": "1daed529123f3acde8ddc326ed6aae31"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.07235116044399596,
+            "file": "3570a0ab9d57bc81511f75bff0638a40"
+        }
+    ],
+    "Level 3: 12_VGG19": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.6044776119402985,
+            "file": "682b06b9e61e3ef2168d6d985078b513"
+        }
+    ],
+    "Level 3: 13_DenseNet121TransitionLayer": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.8129629629629629,
+            "file": "5006e8eb33c8610e6edaafb251749744"
+        }
+    ],
+    "Level 3: 14_DenseNet121DenseBlock": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 1.0047619047619047,
+            "file": "d6132a0b254f709e8dd788a1297d8680"
+        }
+    ],
+    "Level 3: 15_DenseNet121": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9169435215946844,
+            "file": "d89036913bcf9d94180495c63cfdae1b"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.8165680473372781,
+            "file": "ad2689982f8b6a8c5bb185d3097c4177"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.8129602356406479,
+            "file": "086d5e9df0b3305070ef1f44a6c03676"
+        }
+    ],
+    "Level 3: 16_DenseNet201": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.8184210526315789,
+            "file": "6bb3b12391b5ecf345fc24fb30a2ce1c"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.811304347826087,
+            "file": "72d3d3a0ec95d65e6b4e9fb948b93f86"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7974358974358975,
+            "file": "64a2b1bf2c949267b51becf7b26bb906"
+        }
+    ],
+    "Level 3: 17_SqueezeNetFireModule": [],
+    "Level 3: 18_SqueezeNet": [
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.773394495412844,
+            "file": "0f0f45d709766c4f06075aff430c4f3f"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6637795275590551,
+            "file": "21fe8394d2e0657f247e4c8fd0a8e34a"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.5695945945945946,
+            "file": "3e91a539ac0c8fbdcf1b63abc6014b3f"
+        }
+    ],
+    "Level 3: 19_MobileNetV1": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7999999999999999,
+            "file": "29e12c92f073ec26978047f2e7d8fbb5"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.75,
+            "file": "1af09266b606b2d8b67246a70d357a46"
+        }
+    ],
+    "Level 3: 20_MobileNetV2": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6984536082474226,
+            "file": "b19564df80e23467c721fa54f071794f"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.6498800959232613,
+            "file": "1088e179941537f9db3b9778860e9d5a"
+        }
+    ],
+    "Level 3: 21_EfficientNetMBConv": [],
+    "Level 3: 22_EfficientNetB0": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7060606060606062,
+            "file": "65056b74fdfa178fe7d27ea44fd84141"
+        }
+    ],
+    "Level 3: 23_EfficientNetB1": [],
+    "Level 3: 24_EfficientNetB2": [],
+    "Level 3: 25_ShuffleNetUnit": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.9488054607508533,
+            "file": "7188491af4a6668c5fa859e0a4ed6a75"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.6150442477876106,
+            "file": "e7b90d2662b48b6ea28f86dc772a3aaf"
+        }
+    ],
+    "Level 3: 26_ShuffleNet": [
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9605263157894737,
+            "file": "d0ff273f6c74cbe3eb3341d8c6a8b157"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.9542483660130718,
+            "file": "d21509ece6af3f788630ffe760373be1"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.8848484848484848,
+            "file": "bb53b068c5aaac53592e76c75480a452"
+        }
+    ],
+    "Level 3: 27_RegNet": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.9867256637168142,
+            "file": "5a6f70b284fcc26eba46549f4c658a1b"
+        },
+        {
+            "display_name": "gpt-o1",
+            "torch_speedup": 0.9759299781181618,
+            "file": "81596ca2421f83aa0fc6996aef327a53"
+        }
+    ],
+    "Level 3: 28_VisionTransformer": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.7747252747252746,
+            "file": "1725106f1ced09c00f9e31cf6dc40941"
+        },
+        {
+            "display_name": "gpt-4o",
+            "torch_speedup": 0.7704918032786885,
+            "file": "6f32f5a1a63ed1f60d16728e9195a2ed"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.7580645161290321,
+            "file": "a49adaeaeb593f7a883ece667fa2e4c4"
+        }
+    ],
+    "Level 3: 29_SwinMLP": [
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 1.0125223613595706,
+            "file": "ac954a9ffab6a3bdc13c978e2b43774c"
+        },
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.9947275922671353,
+            "file": "e1a4a9fc21fa01f12edf3bdc23a208f6"
+        },
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.9895104895104896,
+            "file": "0ff4e1d43594bc5a3bf9104992ebdd5d"
+        }
+    ],
+    "Level 3: 30_SwinTransformerV2": [
+        {
+            "display_name": "gemini-1.5-flash",
+            "torch_speedup": 0.8543859649122807,
+            "file": "4e4f693455ef8de4c399d5e172adf329"
+        }
+    ],
+    "Level 3: 31_VisionAttention": [],
+    "Level 3: 32_ConvolutionalVisionTransformer": [
+        {
+            "display_name": "deepseek-coder",
+            "torch_speedup": 0.711864406779661,
+            "file": "1cc35d538f07bf6eb467c81a3f2612c1"
+        },
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.6961325966850829,
+            "file": "7c92207241b7dba5d0be2b96cba07dbc"
+        }
+    ],
+    "Level 3: 33_VanillaRNN": [
+        {
+            "display_name": "claude-3.5-sonnet",
+            "torch_speedup": 0.009218241042345277,
+            "file": "e2f7c76772af9d09c746d5ee3e8166de"
+        }
+    ],
+    "Level 3: 34_VanillaRNNHidden": [],
+    "Level 3: 35_LTSM": [],
+    "Level 3: 36_LTSMHn": [],
+    "Level 3: 37_LTSMCn": [],
+    "Level 3: 38_LTSMBidirectional": [],
+    "Level 3: 39_GRU": [],
+    "Level 3: 40_GRUHidden": [],
+    "Level 3: 41_GRUBirectional": [],
+    "Level 3: 42_GRUBidirectionalHidden": [],
+    "Level 3: 43_MinGPTCausalAttention": [],
+    "Level 3: 44_MiniGPTBlock": [],
+    "Level 3: 45_UNetSoftmax": [],
+    "Level 3: 46_NetVladWithGhostClusters": [],
+    "Level 3: 47_NetVladNoGhostClusters": [
+        {
+            "display_name": "llama-3.1-405b",
+            "torch_speedup": 0.910569105691057,
+            "file": "7ae6ff56f46286ca0c5e46d751afc44d"
+        }
+    ],
+    "Level 3: 48_Mamba2ReturnY": [],
+    "Level 3: 49_Mamba2ReturnFinalState": [],
+    "Level 3: 50_ReLUSelfAttention": []
+}
