@@ -13,6 +13,8 @@ import json
 from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
 import sys
+import signal
+from contextlib import contextmanager
 
 from . import utils
 
@@ -113,6 +115,25 @@ def load_original_model_and_inputs(
     return (Model, get_init_inputs_fn, get_inputs_fn)
 
 
+class TimeoutException(Exception):
+    pass
+
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+    
+    # Set the signal handler and a timeout
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    
+    try:
+        yield
+    finally:
+        # Disable the alarm
+        signal.alarm(0)
+
+
 def load_custom_model(
     model_custom_src: str, context: dict, build_directory: str = None
 ) -> nn.Module:
@@ -128,11 +149,15 @@ def load_custom_model(
         ) + model_custom_src
 
     try:
-        compile(model_custom_src, "<string>", "exec")
-        exec(model_custom_src, context)
-        # DANGER: need to delete refernece from global namespace
-    except SyntaxError as e:
-        print(f"Syntax Error in custom generated code or Compilation Error {e}")
+        with time_limit(5): 
+            exec(model_custom_src, context)
+    except TimeoutException as e:
+        print(f"Execution timed out: {e}")
+        # Handle timeout case appropriately
+        return None
+    except Exception as e:
+        print(f"Error in executing custom code {e}")
+        # Handle other exceptions
         return None
 
     ModelNew = context.get("ModelNew")
@@ -354,6 +379,8 @@ def eval_kernel_against_ref(
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
         ModelNew = load_custom_model(custom_model_src, context, build_dir)
+        if ModelNew is None:
+            raise RuntimeError("ModelNew is None")
         torch.cuda.synchronize(device=device)  # not sure if this is too much
     except Exception as e:
         print(
@@ -385,7 +412,7 @@ def eval_kernel_against_ref(
             torch.cuda.synchronize(device=device)
         if verbose:
             print("[Eval] New Model with Custom CUDA Kernel Loaded")
-    except RuntimeError as e:
+    except Exception as e:
         print(
             f"Failed to load custom CUDA kernel; Compiled but not able to run, count as runtime error. \nError: {e}"
         )

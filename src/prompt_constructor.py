@@ -18,7 +18,7 @@ REPO_TOP_PATH = os.path.abspath(
 )
 KERNEL_BENCH_PATH = os.path.join(REPO_TOP_PATH, "KernelBench")
 
-SYSTEM_PROMPT = """You are an expert CUDA programmer specializing in kernel optimization. Your task is to optimize CUDA kernels for specific GPU architectures while maintaining correctness."""
+#SYSTEM_PROMPT = """You are an expert CUDA programmer specializing in kernel optimization. Your task is to optimize CUDA kernels for specific GPU architectures while maintaining correctness."""
 SYSTEM_PROMPT = """"""
 
 def get_arch_definition_from_file(arch_path):
@@ -38,52 +38,51 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels. Optimize for correctness and speedups."""
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for correctness and speedup. Name your optimized output architecture ModelNew."""
 
-CUSTOM_PROBLEM_INSTRUCTION = '''
-After <think></think>, your final answer should follow this format: 
-<answer>
-...
-from torch.utils.cpp_extension import load_inline
-
-[TASK_NAME]_source = """
-#include <torch/extension.h>
-#include <cuda_runtime.h>
-
-__global__ void [TASK_NAME]_kernel(...) {
-    ...
-}
-
-torch::Tensor [TASK_NAME]_cuda(...) {
-    ...
-}
+CUSTOM_PROBLEM_INSTRUCTION = """
+You can reason about the problem and then generate the code. Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
+Your answer should be real code (no pseudocode, no other text), and make sure the code compiles and is fully functional.
 """
-
-[TASK_NAME]_cpp_source = (
-    torch::Tensor [TASK_NAME]_cuda(...);
-)
-
-[TASK_NAME] = load_inline(
-    name="[TASK_NAME]",
-    cpp_sources=[TASK_NAME]_cpp_source,
-    cuda_sources=[TASK_NAME]_source,
-    functions=["[TASK_NAME]_cuda"],
-    verbose=True,
-    extra_cflags=[""],
-    extra_ldflags=[""],
-)
-
-class ModelNew(nn.Module):
-    ...
-
-</answer>
-'''
 
 def custom_prompt_generate_custom_cuda(
     arc_src: str
 ) -> str:
-    prompt = CUSTOM_PROBLEM_STATEMENT
+    example_arch_path = os.path.join(
+        REPO_TOP_PATH, f"src/prompts/model_ex_add.py"
+    )
+    example_new_arch_path = os.path.join(
+        REPO_TOP_PATH, f"src/prompts/model_new_ex_add.py"
+    )
+    example_arch_src = read_file(example_arch_path)
+    example_new_arch_src = read_file(example_new_arch_path)
+    prompt = f"""You are an expert CUDA programmer specializing in kernel optimization.
+    You are given the following architecture:
+    ```
+    {arc_src}
+    ```
+    """
+    prompt += CUSTOM_PROBLEM_STATEMENT
     prompt += CUSTOM_PROBLEM_INSTRUCTION
+    if example_arch_src != "" and example_new_arch_src != "":
+        # prompt += f"""
+        # Here's an example of output to show you the syntax of inline embedding custom CUDA operators in torch:
+        # <answer>
+        # ```
+        # {example_new_arch_src}
+        # ```
+        # </answer>
+        # """
+        prompt += f"""
+        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch: The example given architecture is: \n
+        ``` \n
+        {example_arch_src}
+        ``` \n
+        The example new arch with custom CUDA kernels looks like this: 
+        ```
+        {example_new_arch_src}
+        ``` \n
+        """
     return prompt
 
 ############################################
@@ -416,8 +415,8 @@ def prompt_generate_prompt_with_hardware_info_from_template(ref_arch_src: str, g
     return prompt_generate_prompt_with_hardware_info(
                                         ref_arch_src=arch, 
                                         gpu_name=gpu_name, 
-                                        example_arch_src="", 
-                                        example_new_arch_src="", 
+                                        example_arch_src=example_arch, 
+                                        example_new_arch_src=example_new_arch, 
                                         gpu_spec_info_src=gpu_spec_info
                                         )
     

@@ -8,28 +8,28 @@ from datasets import load_dataset, Dataset
 from trl import GRPOConfig, GRPOTrainer
 from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
-from src.prompt_constructor import prompt_generate_prompt_with_hardware_info_from_template, SYSTEM_PROMPT
-from src.utils import measure_program_time, set_gpu_arch, read_file
-from src.reward import reward_fn
+from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PROMPT
+from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
+from src.reward import reward_fn, format_reward
 from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
         # Model configuration
-        self.model_name = "Qwen/Qwen2.5-0.5B-Instruct"# "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 512
+        self.max_tokens = 8192
         
         # GRPO configuration
-        self.num_generations = 2  # Number of generations per prompt
-        self.beta = 0.01  # KL coefficient
-        self.temperature = 0.6
+        self.num_generations = 16  # Number of generations per prompt
+        self.beta = 0.001  # KL coefficient
+        self.temperature = 0.7
         
         # Training configuration
-        self.num_epochs = 10
-        self.batch_size = 1
+        self.num_epochs = 20
+        self.batch_size = 16
         self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = True
+        self.gradient_checkpointing = False
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
         
@@ -100,9 +100,9 @@ def main(config: TrainingConfig):
         
     train_prompts = []
     for ref_arch_src in data["ref_arch_src"]:
-        prompt = prompt_generate_prompt_with_hardware_info_from_template(ref_arch_src, gpu_name=config.gpu_name)
-        train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
-
+        prompt = custom_prompt_generate_custom_cuda(ref_arch_src)#, gpu_name=config.gpu_name)
+        # train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
+        train_prompts.append([{"role": "user", "content": prompt}])
     dataset = Dataset.from_dict({
         "prompt": train_prompts,
         "ref_arch_src": data["ref_arch_src"],
@@ -116,15 +116,17 @@ def main(config: TrainingConfig):
         torch_dtype="bfloat16",
         use_cache=False if config.gradient_checkpointing else True,
     )
+    tokenizer = get_tokenizer(config.model_name)
 
     # Create GRPO config
     training_args = GRPOConfig(
         output_dir=config.output_dir,
-        model_init_kwargs=model_kwargs,
+        model_init_kwargs=model_kwargs if config.full_finetune else None,
         learning_rate=config.learning_rate,
         num_train_epochs=config.num_epochs,
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
+        gradient_checkpointing=config.gradient_checkpointing,
         max_prompt_length=None,
         max_completion_length=config.max_tokens,
         num_generations=config.num_generations,
@@ -142,7 +144,8 @@ def main(config: TrainingConfig):
         model = AutoModelForCausalLM.from_pretrained(
             config.model_name,
             torch_dtype=torch.bfloat16,
-            device_map="auto"
+            device_map="auto",
+            attn_implementation="flash_attention_2"
         )
     
         lora_config = LoraConfig(
@@ -160,18 +163,19 @@ def main(config: TrainingConfig):
     # Create GRPO trainer with LoRA model
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=reward_fn,
+        reward_funcs=[reward_fn, format_reward],
         args=training_args,
-        train_dataset=dataset
+        train_dataset=dataset,
+        processing_class=tokenizer
     )
     
     # Train model
     print("Starting training...")
     trainer.train()
     
-    # Save final model
-    print("Saving model...")
-    trainer.save_pretrained(os.path.join(config.output_dir, "final_model"))
+    if trainer.accelerator.is_main_process:
+        print("Saving model...")
+        trainer.model.config.save_pretrained(training_args.output_dir)
 
 if __name__ == "__main__":
     main() 
