@@ -16,7 +16,7 @@ from peft import LoraConfig, get_peft_model
 class TrainingConfig(Config):
     def __init__(self):
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
         self.learning_rate = 1e-5
         self.max_tokens = 4096
         
@@ -107,7 +107,8 @@ def main(config: TrainingConfig):
     dataset = Dataset.from_dict({
         "prompt": train_prompts,
         "ref_arch_src": data["ref_arch_src"],
-        "baseline_runtime": data["baseline_runtime"]
+        "baseline_runtime": data["baseline_runtime"],
+        "task_id": list(range(len(train_prompts))), # TODO: add support for level 2
     })
 
     print(f"Dataset size: {len(dataset)}")
@@ -138,7 +139,9 @@ def main(config: TrainingConfig):
         vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
         optim=config.optim,
         report_to=["wandb"],
-        logging_steps=1
+        logging_steps=1,
+        save_steps=10,
+        save_total_limit=10
     )
 
     if config.full_finetune:
@@ -167,7 +170,7 @@ def main(config: TrainingConfig):
     # Create GRPO trainer with LoRA model
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, **kwargs), 
+        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, task_ids, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_ids, **kwargs), 
                       format_reward],
         args=training_args,
         train_dataset=dataset,
