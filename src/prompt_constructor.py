@@ -87,17 +87,15 @@ def custom_prompt_generate_custom_cuda(
         """
     return prompt
 
-def fetch_info(path : str):
+def fetch_info(file : str):
     out = ""
-    with open(path, "r") as file:
-        lines = file.readlines()
-        in_model = False
-        for line in lines:
-            if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
-                break
-            if line == "class Model(nn.Module):\n":
-                in_model=True
-            out+=line
+    in_model = False
+    for line in [line + "\n" for line in file.splitlines()]:
+        if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
+            break
+        if line == "class Model(nn.Module):\n":
+            in_model=True
+        out += line
     return out
 
 ############################################
