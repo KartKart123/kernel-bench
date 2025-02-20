@@ -83,9 +83,9 @@ def main(config: TrainingConfig):
         levels = []
         task_ids = []
         
-        for problem in tqdm(train_problems, desc="Processing problems"):
+        for i, problem in enumerate(tqdm(train_problems, desc="Processing problems")):
             ref_arch_src = read_file(problem)
-            task_id = os.path.basename(problem).split('_')[0]
+            task_id = int(os.path.basename(problem).split('_')[0])
             baseline_stats = measure_program_time(problem, ref_arch_src)
             if baseline_stats is None:
                 print(f"Skipping problem {problem} due to baseline measurement error")
@@ -94,6 +94,12 @@ def main(config: TrainingConfig):
             ref_arch_srcs.append(ref_arch_src)
             levels.append(config.level)
             task_ids.append(task_id)
+            if i == 20:
+                print("Example data in iteration i == 20")
+                print("Task ID: ", task_id)
+                print("Level: ", config.level)
+                print("Baseline Runtime: ", baseline_stats["mean"])
+                print("Ref Arch Src: ", ref_arch_src)
 
         data = {
             "ref_arch_src": ref_arch_srcs,

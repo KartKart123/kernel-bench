@@ -47,8 +47,8 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             continue
         parse_reward = 0.5
 
-        match = re.match(format_pattern, content, re.DOTALL | re.MULTILINE)
-        format_reward = 1.0 if match else 0.0 # Just for saving to output; Won't be added to reward
+        format_match = re.match(format_pattern, content, re.DOTALL | re.MULTILINE)
+        format_reward = 1.0 if format_match else 0.0 # Just for saving to output; Won't be added to reward
 
         #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])
         custom_cuda = match.group(1).strip()
@@ -78,7 +78,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
 
         # Save outputs
         arch_output_dir = f"{output_dir}/level_{ind_level}/task_{id}/step_{current_step}"
-        arch_output_path = f"{arch_output_dir}/device_{device}.json"
+        arch_output_path = f"{arch_output_dir}/device_{device.index}.json"
         os.makedirs(arch_output_dir, exist_ok=True)
 
         # Initialize or load existing data
@@ -96,7 +96,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             "level": ind_level,
             "task_id": id,
             "step": current_step,
-            "device": device,
+            "device": device.index,
             "compiled": eval_result.compiled,
             "correctness": eval_result.correctness,
             "runtime": eval_result.runtime,
