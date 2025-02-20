@@ -15,6 +15,8 @@ from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
+        self.seed = 42
+        self.verbose = True
         # Model configuration
         self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
         self.learning_rate = 1e-5
@@ -33,6 +35,12 @@ class TrainingConfig(Config):
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
         self.optim = "adamw_torch"
+
+        # Evaluation configuration
+        self.do_eval = False
+        self.per_device_eval_batch_size = self.batch_size
+        self.eval_strategy = "steps" if self.do_eval else "no"
+        self.eval_steps = 20
 
         # Dataset configuration
         self.level = 1
@@ -94,7 +102,7 @@ def main(config: TrainingConfig):
             ref_arch_srcs.append(ref_arch_src)
             levels.append(config.level)
             task_ids.append(task_id)
-            if i == 20:
+            if i == 20 and config.verbose:
                 print("Example data in iteration i == 20")
                 print("Task ID: ", task_id)
                 print("Level: ", config.level)
@@ -128,6 +136,16 @@ def main(config: TrainingConfig):
 
     print(f"Dataset size: {len(dataset)}")
 
+    # Split into train and eval
+    split_dataset = dataset.train_test_split(test_size=0.2, seed=config.seed)
+    train_dataset = split_dataset["train"]
+    eval_dataset = split_dataset["test"]
+    print(f"Train dataset size: {len(train_dataset)}")
+    print(f"Eval dataset size: {len(eval_dataset)}")
+    if config.verbose:
+        print("Evaluation dataset indices:")
+        print(eval_dataset["task_id"])
+
     model_kwargs = dict(
         attn_implementation="flash_attention_2",
         torch_dtype="bfloat16",
@@ -156,7 +174,12 @@ def main(config: TrainingConfig):
         report_to=["wandb"],
         logging_steps=1,
         save_steps=10,
-        save_total_limit=10
+        save_total_limit=10,
+        do_eval=config.do_eval,
+        per_device_eval_batch_size=config.per_device_eval_batch_size,
+        eval_strategy=config.eval_strategy,
+        eval_steps=config.eval_steps,
+        seed=config.seed,
     )
 
     if config.full_finetune:
@@ -191,7 +214,8 @@ def main(config: TrainingConfig):
         model=model,
         reward_funcs=[compute_reward, format_reward],
         args=training_args,
-        train_dataset=dataset,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         processing_class=tokenizer,
     )
     
