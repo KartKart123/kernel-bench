@@ -38,12 +38,11 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for correctness and speedup. 
-You are writing kernels for a NVIDIA H100 GPU, so keep in mind tiling, fusion, memory hierarchy, and tensor cores. 
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels. 
 Name your optimized output architecture ModelNew."""
 
 CUSTOM_PROBLEM_INSTRUCTION = """
-You can reason about the problem and then generate the code. Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
+Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
 Your answer should be real code (no pseudocode, no other text), and make sure the code compiles and is fully functional.
 """
 
@@ -58,7 +57,7 @@ def custom_prompt_generate_custom_cuda(
     )
     example_arch_src = read_file(example_arch_path)
     example_new_arch_src = read_file(example_new_arch_path)
-    prompt = f"""You are an expert CUDA programmer specializing in kernel optimization.
+    prompt = f"""
     You are given the following architecture:
     ```
     {fetch_info(arc_src)}
@@ -88,15 +87,16 @@ def custom_prompt_generate_custom_cuda(
     return prompt
 
 def fetch_info(file : str):
-    out = ""
-    in_model = False
-    for line in [line + "\n" for line in file.splitlines()]:
-        if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
-            break
-        if line == "class Model(nn.Module):\n":
-            in_model=True
-        out += line
-    return out
+    # out = ""
+    # in_model = False
+    # for line in [line + "\n" for line in file.splitlines()]:
+    #     if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
+    #         break
+    #     if line == "class Model(nn.Module):\n":
+    #         in_model=True
+    #     out += line
+    # return out
+    return file
 
 ############################################
 # Old CUDA Prompt

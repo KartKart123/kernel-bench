@@ -86,6 +86,8 @@ class KernelExecResult(BaseModel):
     metadata: dict = {}
     runtime: float = -1.0  # in us, only recorded if we decide to measure performance
     runtime_stats: dict = {}  # only recorded if we decide to measure performance
+    runtime_original: float = -1.0  # in us, only recorded if we decide to measure performance
+    runtime_stats_original: dict = {}  # only recorded if we decide to measure performance
 
 
 def load_original_model_and_inputs(
@@ -149,7 +151,7 @@ def load_custom_model(
         ) + model_custom_src
 
     try:
-        with time_limit(10): 
+        with time_limit(60): 
             exec(model_custom_src, context)
     except TimeoutException as e:
         print(f"Execution timed out: {e}")
@@ -177,22 +179,25 @@ def _cleanup_cuda_extensions():
 
 
 def graceful_eval_cleanup(curr_context: dict, device: torch.device):
-    """
-    Clean up env, gpu cache, and compiled CUDA extensions after evaluation
-    """  # delete ran-specific function definitions before next eval run
-    del curr_context
-    # Clear CUDA cache and reset GPU state
-    with torch.cuda.device(device):
-        torch.cuda.empty_cache()
+    try:
+        """
+        Clean up env, gpu cache, and compiled CUDA extensions after evaluation
+        """  # delete ran-specific function definitions before next eval run
+        del curr_context
+        # Clear CUDA cache and reset GPU state
+        with torch.cuda.device(device):
+            torch.cuda.empty_cache()
 
-        # does this help?
-        torch.cuda.reset_peak_memory_stats(device=device)
+            # does this help?
+            torch.cuda.reset_peak_memory_stats(device=device)
 
-        torch.cuda.synchronize(
-            device=device
-        )  # Wait for all CUDA operations to complete
+            torch.cuda.synchronize(
+                device=device
+            )  # Wait for all CUDA operations to complete
 
-    # _cleanup_cuda_extensions() # SIMON NOTE: is this necessary?
+        # _cleanup_cuda_extensions() # SIMON NOTE: is this necessary?
+    except Exception as e:
+        print(e, "graceful_eval_cleanup encountered an error")
 
 def build_compile_cache_legacy(
     custom_model_src: str,
@@ -472,10 +477,24 @@ def eval_kernel_against_ref(
                 )
                 runtime_stats = get_timing_stats(elapsed_times, device=device)
 
+                torch.cuda.synchronize(device=device)
+                model_old = original_model.cuda(device=device)
+                torch.cuda.synchronize(device=device)
+                elapsed_times_original = time_execution_with_cuda_event(
+                    model_old,
+                    *inputs,
+                    num_trials=num_perf_trials,
+                    verbose=verbose,
+                    device=device,
+                )
+                runtime_stats_original = get_timing_stats(elapsed_times_original, device=device)
+
                 if verbose:
                     print(f"[Eval] Performance Stats: {runtime_stats}")
                 kernel_exec_result.runtime = runtime_stats["mean"]
                 kernel_exec_result.runtime_stats = runtime_stats
+                kernel_exec_result.runtime_original = runtime_stats_original["mean"]
+                kernel_exec_result.runtime_stats_original = runtime_stats_original
         except Exception as e:
             if verbose:
                 print(f"[Eval] Error in Measuring Performance: {e}")

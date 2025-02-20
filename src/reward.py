@@ -13,7 +13,7 @@ def calculate_kernel_reward(
     compilation_reward = float(eval_result.compiled)
     correctness_reward = float(eval_result.correctness)
     if eval_result.correctness and eval_result.runtime > 0:
-        speedup = baseline_runtime / eval_result.runtime
+        speedup = eval_result.runtime_original / eval_result.runtime
         performance_reward = speedup 
     else:
         performance_reward = 0.0
@@ -22,7 +22,7 @@ def calculate_kernel_reward(
     
     return (compilation_reward, correctness_reward, performance_reward)
 
-def format_reward(completions, **kwargs):
+def compute_format_reward(completions, **kwargs):
     """Reward function that checks if the reasoning process is enclosed within <think> and </think> tags, while the final answer is enclosed within <answer> and </answer> tags."""
     pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     completion_contents = [completion[0]["content"] for completion in completions]
@@ -34,7 +34,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
     rewards = []
     current_step = trainer.state.global_step
     device = trainer.model.device
-    parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$"
+    parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$" #TODO change it
     format_pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     for prompt, completion, runtime, ref_arch, ind_level, id in zip(prompts, completions, baseline_runtime, ref_arch_src, level, task_id):
         reward = 0.0
@@ -45,7 +45,6 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
         if match is None:
             rewards.append(reward)
             continue
-        parse_reward = 0.5
 
         format_match = re.match(format_pattern, content, re.DOTALL | re.MULTILINE)
         format_reward = 1.0 if format_match else 0.0 # Just for saving to output; Won't be added to reward
@@ -55,6 +54,13 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
         for code_type in ["python", "cpp"]:
             if custom_cuda.startswith(code_type):
                 custom_cuda = custom_cuda[len(code_type) :].strip()
+
+        if "__global__" not in custom_cuda or "load_inline(" not in custom_cuda:
+            rewards.append(reward)
+            continue
+
+        reward += 1.0
+
         # print(custom_cuda)
         # input()
         eval_result = eval_kernel_against_ref(
@@ -63,7 +69,9 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             measure_performance=True,
             device=torch.device(device)
         )
-        # print(eval_result)
+        if trainer.accelerator.is_main_process:
+            print(task_id)
+        print(eval_result)
         # input()
         compilation_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
             eval_result=eval_result,
@@ -71,13 +79,13 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
         )
 
         # Compute total reward
-        reward = parse_reward + compilation_reward + correctness_reward + performance_reward
+        reward += compilation_reward + correctness_reward + performance_reward
         rewards.append(reward)
         # print(reward)
         # input()
 
         # Save outputs
-        arch_output_dir = f"{output_dir}/level_{ind_level}/task_{id}/step_{current_step}"
+        arch_output_dir = f"{output_dir}/level_{ind_level}/step_{current_step}"
         arch_output_path = f"{arch_output_dir}/device_{device.index}.json"
         os.makedirs(arch_output_dir, exist_ok=True)
 
@@ -101,17 +109,16 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             "correctness": eval_result.correctness,
             "runtime": eval_result.runtime,
             "baseline_runtime": runtime,
-            "parse_reward": parse_reward,
             "format_reward": format_reward,
             "compilation_reward": compilation_reward,
             "correctness_reward": correctness_reward,
             "performance_reward": performance_reward,
-            "reward": reward,
+            "reward": reward + format_reward,
             "prompt": prompt[0]["content"],
             "response": content,
         }
         data.append(entry)
-        
+
         # Write back to file
         with open(arch_output_path, 'w') as f:
             json.dump(data, f,indent=2)
