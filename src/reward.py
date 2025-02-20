@@ -29,24 +29,26 @@ def format_reward(completions, **kwargs):
     matches = [re.match(pattern, content, re.DOTALL | re.MULTILINE) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
-def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs):
-    output_dir = "outputs"
-    os.makedirs(output_dir, exist_ok=True) # TODO: put into train_grpo.py
+def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, trainer, output_dir="outputs", **kwargs):
+    os.makedirs(output_dir, exist_ok=True)
     rewards = []
-    pattern = r"^.*?</think>.*?```(.*?)```.*?$"
     current_step = trainer.state.global_step
     device = trainer.model.device
-    #pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
-    for prompt, completion, runtime, ref_arch, id in zip(prompts, completions, baseline_runtime, ref_arch_src, task_id):
+    parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$"
+    format_pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
+    for prompt, completion, runtime, ref_arch, ind_level, id in zip(prompts, completions, baseline_runtime, ref_arch_src, level, task_id):
         reward = 0.0
         content = completion[0]["content"]
-        match = re.match(pattern, content, re.DOTALL | re.MULTILINE)
+        match = re.match(parse_pattern, content, re.DOTALL | re.MULTILINE)
         # print(content)
         # input()
         if match is None:
             rewards.append(reward)
             continue
         parse_reward = 0.5
+
+        match = re.match(format_pattern, content, re.DOTALL | re.MULTILINE)
+        format_reward = 1.0 if match else 0.0 # Just for saving to output; Won't be added to reward
 
         #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])
         custom_cuda = match.group(1).strip()
@@ -75,8 +77,8 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
         # input()
 
         # Save outputs
-        arch_output_dir = f"{output_dir}/task_{id}"
-        arch_output_path = f"{arch_output_dir}/step_{current_step}.json"
+        arch_output_dir = f"{output_dir}/level_{ind_level}/task_{id}/step_{current_step}"
+        arch_output_path = f"{arch_output_dir}/device_{device}.json"
         os.makedirs(arch_output_dir, exist_ok=True)
 
         # Initialize or load existing data
@@ -91,18 +93,22 @@ def reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, tas
 
         # Append new entry
         entry = {
+            "level": ind_level,
             "task_id": id,
-            "prompt": prompt[0]["content"],
-            "response": content,
+            "step": current_step,
+            "device": device,
             "compiled": eval_result.compiled,
             "correctness": eval_result.correctness,
             "runtime": eval_result.runtime,
             "baseline_runtime": runtime,
             "parse_reward": parse_reward,
+            "format_reward": format_reward,
             "compilation_reward": compilation_reward,
             "correctness_reward": correctness_reward,
             "performance_reward": performance_reward,
             "reward": reward,
+            "prompt": prompt[0]["content"],
+            "response": content,
         }
         data.append(entry)
         

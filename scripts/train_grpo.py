@@ -46,7 +46,8 @@ class TrainingConfig(Config):
         
         # Output configuration
         self.output_dir = "runs/grpo_training"
-        
+        self.response_output_dir = "outputs"
+
         self.full_finetune = True
         # LoRA configuration
         self.lora_r = 8
@@ -108,7 +109,8 @@ def main(config: TrainingConfig):
         "prompt": train_prompts,
         "ref_arch_src": data["ref_arch_src"],
         "baseline_runtime": data["baseline_runtime"],
-        "task_id": list(range(len(train_prompts))), # TODO: add support for level 2
+        "level": config.level,
+        "task_id": list(range(len(train_prompts))),
     })
 
     print(f"Dataset size: {len(dataset)}")
@@ -167,14 +169,17 @@ def main(config: TrainingConfig):
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
-    # Create GRPO trainer with LoRA model
+    # Create reward function that takes in trainer
+    def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
+        return reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, 
+                         trainer, output_dir=config.response_output_dir, **kwargs)
+
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[lambda prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs: reward_fn(trainer, prompts, completions, ref_arch_src, baseline_runtime, task_id, **kwargs), 
-                      format_reward],
+        reward_funcs=[compute_reward, format_reward],
         args=training_args,
         train_dataset=dataset,
-        processing_class=tokenizer
+        processing_class=tokenizer,
     )
     
     # Train model
