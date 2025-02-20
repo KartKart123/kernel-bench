@@ -38,7 +38,9 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for correctness and speedup. Name your optimized output architecture ModelNew."""
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for correctness and speedup. 
+You are writing kernels for a NVIDIA H100 GPU, so keep in mind tiling, fusion, memory hierarchy, and tensor cores. 
+Name your optimized output architecture ModelNew."""
 
 CUSTOM_PROBLEM_INSTRUCTION = """
 You can reason about the problem and then generate the code. Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
@@ -59,7 +61,7 @@ def custom_prompt_generate_custom_cuda(
     prompt = f"""You are an expert CUDA programmer specializing in kernel optimization.
     You are given the following architecture:
     ```
-    {arc_src}
+    {fetch_info(arc_src)}
     ```
     """
     prompt += CUSTOM_PROBLEM_STATEMENT
@@ -76,7 +78,7 @@ def custom_prompt_generate_custom_cuda(
         prompt += f"""
         Here's an example to show you the syntax of inline embedding custom CUDA operators in torch: The example given architecture is: \n
         ``` \n
-        {example_arch_src}
+        {fetch_info(example_arch_src)}
         ``` \n
         The example new arch with custom CUDA kernels looks like this: 
         ```
@@ -84,6 +86,19 @@ def custom_prompt_generate_custom_cuda(
         ``` \n
         """
     return prompt
+
+def fetch_info(path : str):
+    out = ""
+    with open(path, "r") as file:
+        lines = file.readlines()
+        in_model = False
+        for line in lines:
+            if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
+                break
+            if line == "class Model(nn.Module):\n":
+                in_model=True
+            out+=line
+    return out
 
 ############################################
 # Old CUDA Prompt
