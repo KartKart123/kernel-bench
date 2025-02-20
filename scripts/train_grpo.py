@@ -21,7 +21,7 @@ class TrainingConfig(Config):
         self.max_tokens = 4096
         
         # GRPO configuration
-        self.num_generations = 7  # Number of generations per prompt
+        self.num_generations = 3  # Number of generations per prompt
         self.beta = 0.001  # KL coefficient
         self.temperature = 0.7
         
@@ -80,19 +80,26 @@ def main(config: TrainingConfig):
         print("Preparing training data...")
         ref_arch_srcs = []
         baseline_runtimes = []
+        levels = []
+        task_ids = []
         
         for problem in tqdm(train_problems, desc="Processing problems"):
             ref_arch_src = read_file(problem)
+            task_id = os.path.basename(problem).split('_')[0]
             baseline_stats = measure_program_time(problem, ref_arch_src)
             if baseline_stats is None:
                 print(f"Skipping problem {problem} due to baseline measurement error")
                 continue
             baseline_runtimes.append(baseline_stats["mean"])
             ref_arch_srcs.append(ref_arch_src)
-        
+            levels.append(config.level)
+            task_ids.append(task_id)
+
         data = {
             "ref_arch_src": ref_arch_srcs,
-            "baseline_runtime": baseline_runtimes
+            "baseline_runtime": baseline_runtimes,
+            "level": levels,
+            "task_id": task_ids
         }
 
         # Save processed dataset
@@ -109,8 +116,8 @@ def main(config: TrainingConfig):
         "prompt": train_prompts,
         "ref_arch_src": data["ref_arch_src"],
         "baseline_runtime": data["baseline_runtime"],
-        "level": config.level,
-        "task_id": list(range(len(train_prompts))),
+        "level": data["level"],
+        "task_id": data["task_id"],
     })
 
     print(f"Dataset size: {len(dataset)}")
