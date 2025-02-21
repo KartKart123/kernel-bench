@@ -10,7 +10,7 @@ def calculate_kernel_reward(
 ) -> float:
     if eval_result is None:
         return 0.0
-    compilation_reward = float(eval_result.compiled)
+    compilation_reward = float(eval_result.compiled)/2
     correctness_reward = float(eval_result.correctness)
     if eval_result.correctness and eval_result.runtime > 0:
         speedup = eval_result.runtime_original / eval_result.runtime
@@ -59,10 +59,26 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             rewards.append(reward)
             continue
 
-        reward += 1.0
+        #reward += 0.5
 
-        # print(custom_cuda)
-        # input()
+        # Save response before evaluation
+        # pre_eval_dir = f"{output_dir}/level_{ind_level}/step_{current_step}/pre_eval"
+        # os.makedirs(pre_eval_dir, exist_ok=True)
+        # pre_eval_path = f"{pre_eval_dir}/device_{device.index}_{id}.json"
+        
+        # pre_eval_data = {
+        #     "level": ind_level,
+        #     "task_id": id,
+        #     "step": current_step,
+        #     "device": device.index,
+        #     "prompt": prompt[0]["content"],
+        #     "response": content,
+        #     "custom_cuda": custom_cuda
+        # }
+        
+        # with open(pre_eval_path, 'w') as f:
+        #     json.dump(pre_eval_data, f, indent=2)
+
         eval_result = eval_kernel_against_ref(
             original_model_src=ref_arch,
             custom_model_src=custom_cuda,
@@ -80,6 +96,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
 
         # Compute total reward
         reward += compilation_reward + correctness_reward + performance_reward
+        #reward += correctness_reward + performance_reward
         rewards.append(reward)
         # print(reward)
         # input()

@@ -38,13 +38,14 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels. 
-Name your optimized output architecture ModelNew."""
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for performance.
+Use torch.utils.cpp_extension.load_inline and name your optimized output architecture ModelNew (you can assume that the input will be on CUDA device).
+Your answer should be real code (no pseudocode, no testing code, no other text), and make sure the code is correct."""
 
-CUSTOM_PROBLEM_INSTRUCTION = """
-Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
-Your answer should be real code (no pseudocode, no other text), and make sure the code compiles and is fully functional.
-"""
+# CUSTOM_PROBLEM_INSTRUCTION = """
+# Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>. \n
+# Your answer should be real code (no pseudocode, no testing code,no other text), and make sure the code compiles and is fully functional.\n
+# """
 
 def custom_prompt_generate_custom_cuda(
     arc_src: str
@@ -64,7 +65,7 @@ def custom_prompt_generate_custom_cuda(
     ```
     """
     prompt += CUSTOM_PROBLEM_STATEMENT
-    prompt += CUSTOM_PROBLEM_INSTRUCTION
+    #prompt += CUSTOM_PROBLEM_INSTRUCTION
     if example_arch_src != "" and example_new_arch_src != "":
         # prompt += f"""
         # Here's an example of output to show you the syntax of inline embedding custom CUDA operators in torch:
@@ -75,28 +76,24 @@ def custom_prompt_generate_custom_cuda(
         # </answer>
         # """
         prompt += f"""
-        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch: The example given architecture is: \n
-        ``` \n
-        {fetch_info(example_arch_src)}
-        ``` \n
-        The example new arch with custom CUDA kernels looks like this: 
+        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch: 
         ```
         {example_new_arch_src}
-        ``` \n
+        ```
         """
     return prompt
 
 def fetch_info(file : str):
-    # out = ""
-    # in_model = False
-    # for line in [line + "\n" for line in file.splitlines()]:
-    #     if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
-    #         break
-    #     if line == "class Model(nn.Module):\n":
-    #         in_model=True
-    #     out += line
-    # return out
-    return file
+    out = ""
+    in_model = False
+    for line in [line + "\n" for line in file.splitlines()]:
+        if in_model and line != "\n" and not (line.startswith(" ") or line.startswith("\t")):
+            break
+        if line == "class Model(nn.Module):\n":
+            in_model=True
+        out += line
+    return out
+    #return file
 
 ############################################
 # Old CUDA Prompt

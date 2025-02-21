@@ -15,10 +15,10 @@ from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
-        self.seed = 7
+        self.seed = 11
         self.verbose = True
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
         self.learning_rate = 1e-5
         self.max_tokens = 4096
 
@@ -33,7 +33,7 @@ class TrainingConfig(Config):
         self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = True
         self.use_vllm = True
-        self.vllm_gpu_memory_utilization = 0.5
+        self.vllm_gpu_memory_utilization = 0.7
         self.optim = "adamw_torch"
 
         # Evaluation configuration
@@ -102,12 +102,6 @@ def main(config: TrainingConfig):
             ref_arch_srcs.append(ref_arch_src)
             levels.append(config.level)
             task_ids.append(task_id)
-            if i == 20 and config.verbose:
-                print("Example data in iteration i == 20")
-                print("Task ID: ", task_id)
-                print("Level: ", config.level)
-                print("Baseline Runtime: ", baseline_stats["mean"])
-                print("Ref Arch Src: ", ref_arch_src)
 
         data = {
             "ref_arch_src": ref_arch_srcs,
