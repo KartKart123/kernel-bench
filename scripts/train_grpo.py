@@ -31,9 +31,9 @@ class TrainingConfig(Config):
         self.num_epochs = 10
         self.batch_size = 1
         self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = True
-        self.use_vllm = True
-        self.vllm_gpu_memory_utilization = 0.7
+        self.gradient_checkpointing = False
+        self.use_vllm = False
+        self.vllm_gpu_memory_utilization = 0.5
         self.optim = "adamw_torch"
 
         # Evaluation configuration
@@ -56,7 +56,7 @@ class TrainingConfig(Config):
         self.output_dir = "runs/grpo_training"
         self.response_output_dir = "outputs"
 
-        self.full_finetune = True
+        self.full_finetune = False # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
@@ -177,7 +177,7 @@ def main(config: TrainingConfig):
     )
 
     peft_config = None
-
+    model = config.model_name
 
     if not config.full_finetune:
         model = AutoModelForCausalLM.from_pretrained(
@@ -190,20 +190,20 @@ def main(config: TrainingConfig):
             r=config.lora_r,
             lora_alpha=config.lora_alpha,
             target_modules=config.lora_target_modules,
-            lora_dropout=config.lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM"
+            lora_dropout=config.lora_dropout
         )
         model.enable_input_require_grads()
         model = get_peft_model(model, peft_config)
-    
+        # print("Compiling model")
+        # model = torch.compile(model)
+
     # Create reward function that takes in trainer
     def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
         return reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, 
                          trainer, output_dir=config.response_output_dir, **kwargs)
 
     trainer = GRPOTrainer(
-        model=config.model_name,
+        model=model,
         reward_funcs=[compute_reward, compute_format_reward],
         args=training_args,
         train_dataset=train_dataset,
@@ -211,7 +211,7 @@ def main(config: TrainingConfig):
         processing_class=tokenizer,
         peft_config=peft_config
     )
-    
+
     # Train model
     print("Starting training...")
     trainer.train()
