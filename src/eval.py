@@ -16,7 +16,7 @@ import sys
 import signal
 from contextlib import contextmanager
 
-from . import utils
+# from . import utils
 
 REPO_TOP_PATH = os.path.abspath(
     os.path.join(

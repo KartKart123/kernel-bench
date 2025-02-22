@@ -6,11 +6,9 @@ import json
 import random
 from src.prompt_constructor import custom_prompt_generate_custom_cuda
 from src.utils import read_file
-from tqdm import tqdm
 import torch
 import multiprocessing as mp
 from typing import List, Dict, Tuple
-from functools import partial
 from src.eval import eval_kernel_against_ref
 
 class EvalTracesConfig(Config):
