@@ -26,7 +26,7 @@ def compute_format_reward(completions, **kwargs):
     """Reward function that checks if the reasoning process is enclosed within <think> and </think> tags, while the final answer is enclosed within <answer> and </answer> tags."""
     pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     completion_contents = [completion[0]["content"] for completion in completions]
-    matches = [re.match(pattern, content, re.DOTALL | re.MULTILINE) for content in completion_contents]
+    matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
 def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, trainer, output_dir="outputs", **kwargs):
@@ -39,14 +39,14 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
     for prompt, completion, runtime, ref_arch, ind_level, id in zip(prompts, completions, baseline_runtime, ref_arch_src, level, task_id):
         reward = 0.0
         content = completion[0]["content"]
-        match = re.match(parse_pattern, content, re.DOTALL | re.MULTILINE)
+        match = re.match(parse_pattern, content, re.DOTALL)
         # print(content)
         # input()
         if match is None:
             rewards.append(reward)
             continue
 
-        format_match = re.match(format_pattern, content, re.DOTALL | re.MULTILINE)
+        format_match = re.match(format_pattern, content, re.DOTALL)
         format_reward = 1.0 if format_match else 0.0 # Just for saving to output; Won't be added to reward
 
         #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])

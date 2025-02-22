@@ -32,8 +32,8 @@ class TrainingConfig(Config):
         self.batch_size = 1
         self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = False
-        self.use_vllm = False
-        self.vllm_gpu_memory_utilization = 0.5
+        self.use_vllm = True
+        self.vllm_gpu_memory_utilization = 0.7
         self.optim = "adamw_torch"
 
         # Evaluation configuration
@@ -167,8 +167,8 @@ def main(config: TrainingConfig):
         optim=config.optim,
         report_to=["wandb"],
         logging_steps=1,
-        save_steps=10,
-        save_total_limit=10,
+        save_steps=50,
+        save_total_limit=3,
         do_eval=config.do_eval,
         per_device_eval_batch_size=config.per_device_eval_batch_size,
         eval_strategy=config.eval_strategy,

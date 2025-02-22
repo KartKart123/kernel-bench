@@ -17,7 +17,7 @@ class GenerationConfig(Config):
         self.temperature = 0.7
         self.num_generations = 16
         self.level = 1
-        self.problem_ids = []
+        self.problem_ids = [99]
         self.output_dir = f"reasoning_traces/level_{self.level}"
 
 @pydra.main(base=GenerationConfig)
