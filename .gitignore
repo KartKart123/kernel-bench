@@ -13,3 +13,5 @@ wandb/*
 !results/timing/
 .env
 **.ipynb_checkpoints/
+outputs/
+reasoning_traces/
