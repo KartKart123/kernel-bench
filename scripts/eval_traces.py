@@ -57,7 +57,6 @@ def process_chunk(args: Tuple[List[str], EvalTracesConfig, int]):
                     generation["eval_result"] = {
                         "compiled": eval_result.compiled,
                         "correctness": eval_result.correctness,
-                        "metadata": eval_result.metadata,
                         "runtime": eval_result.runtime,
                         "runtime_stats": eval_result.runtime_stats,
                         "runtime_original": eval_result.runtime_original,

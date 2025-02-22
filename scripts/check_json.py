@@ -6,7 +6,7 @@ import json
 class CheckConfig(Config):
     def __init__(self):
         self.level = 1
-        self.input_dir = f"reasoning_traces/level_{self.level}"
+        self.input_dir = f"reasoning_traces/level_{self.level}/eval"
 
 @pydra.main(base=CheckConfig)
 def main(config: CheckConfig):

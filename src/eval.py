@@ -151,7 +151,7 @@ def load_custom_model(
         ) + model_custom_src
 
     try:
-        with time_limit(60): 
+        with time_limit(120): 
             exec(model_custom_src, context)
     except TimeoutException as e:
         print(f"Execution timed out: {e}")
