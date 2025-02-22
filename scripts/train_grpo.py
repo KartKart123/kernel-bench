@@ -15,20 +15,22 @@ from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
+        self.seed = 103
+        self.verbose = True
         # Model configuration
         self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
         self.learning_rate = 1e-5
         self.max_tokens = 4096
         
         # GRPO configuration
-        self.num_generations = 3  # Number of generations per prompt
+        self.num_generations = 6 # Number of generations per prompt
         self.beta = 0.001  # KL coefficient
         self.temperature = 0.7
         
         # Training configuration
         self.num_epochs = 20
         self.batch_size = 1
-        self.gradient_accumulation_steps = 1
+        self.gradient_accumulation_steps = 2
         self.gradient_checkpointing = True
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
@@ -94,12 +96,6 @@ def main(config: TrainingConfig):
             ref_arch_srcs.append(ref_arch_src)
             levels.append(config.level)
             task_ids.append(task_id)
-            if i == 20:
-                print("Example data in iteration i == 20")
-                print("Task ID: ", task_id)
-                print("Level: ", config.level)
-                print("Baseline Runtime: ", baseline_stats["mean"])
-                print("Ref Arch Src: ", ref_arch_src)
 
         data = {
             "ref_arch_src": ref_arch_srcs,
@@ -144,7 +140,7 @@ def main(config: TrainingConfig):
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         gradient_checkpointing=config.gradient_checkpointing,
-        max_prompt_length=None,
+        max_prompt_length=512,
         max_completion_length=config.max_tokens,
         num_generations=config.num_generations,
         temperature=config.temperature,
@@ -152,22 +148,28 @@ def main(config: TrainingConfig):
         bf16=True,
         use_vllm=config.use_vllm,
         vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
+        vllm_max_model_len=8192,
         optim=config.optim,
         report_to=["wandb"],
         logging_steps=1,
-        save_steps=10,
-        save_total_limit=10
+        save_steps=50,
+        save_total_limit=3,
+        do_eval=config.do_eval,
+        per_device_eval_batch_size=config.per_device_eval_batch_size,
+        eval_strategy=config.eval_strategy,
+        eval_steps=config.eval_steps,
+        seed=config.seed,
     )
 
-    if config.full_finetune:
-        model = config.model_name
-    else:
-        # Create model and apply LoRA
+    peft_config = None
+
+
+    if not config.full_finetune:
         model = AutoModelForCausalLM.from_pretrained(
             config.model_name,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            attn_implementation="flash_attention_2"
+            attn_implementation="flash_attention_2",
+        torch_dtype=torch.bfloat16,
+            use_cache=False if config.gradient_checkpointing else True,
         )
     
         lora_config = LoraConfig(

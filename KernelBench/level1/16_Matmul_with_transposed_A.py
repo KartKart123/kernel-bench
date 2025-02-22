@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class Model(nn.Module):
     """
-    Simple model that performs a single matrix multiplication (C = A * B)
+    Simple model that performs a single matrix multiplication (C = A.T * B)
     """
     def __init__(self):
         super(Model, self).__init__()
@@ -13,7 +13,7 @@ class Model(nn.Module):
         Performs matrix multiplication.
 
         Args:
-            A: Input tensor of shape (M, K).
+            A: Input tensor of shape (K, M).
             B: Input tensor of shape (K, N).
 
         Returns:

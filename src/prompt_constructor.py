@@ -43,8 +43,8 @@ You are writing kernels for a NVIDIA H100 GPU, so keep in mind tiling, fusion, m
 Name your optimized output architecture ModelNew."""
 
 CUSTOM_PROBLEM_INSTRUCTION = """
-You can reason about the problem and then generate the code. Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>
-Your answer should be real code (no pseudocode, no other text), and make sure the code compiles and is fully functional.
+Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>. \n
+Your answer should be real code (no pseudocode, no testing code,no other text), and make sure the code compiles and is fully functional. Do NOT cheat by calling torch.nn functions in your code.\n
 """
 
 def custom_prompt_generate_custom_cuda(
@@ -61,7 +61,7 @@ def custom_prompt_generate_custom_cuda(
     prompt = f"""You are an expert CUDA programmer specializing in kernel optimization.
     You are given the following architecture:
     ```
-    {fetch_info(arc_src)}
+    {arc_src}
     ```
     """
     prompt += CUSTOM_PROBLEM_STATEMENT
@@ -76,7 +76,7 @@ def custom_prompt_generate_custom_cuda(
         # </answer>
         # """
         prompt += f"""
-        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch: The example given architecture is: \n
+        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch. The example given architecture is: \n
         ``` \n
         {fetch_info(example_arch_src)}
         ``` \n
@@ -97,6 +97,7 @@ def fetch_info(file : str):
             in_model=True
         out += line
     return out
+    #return file
 
 ############################################
 # Old CUDA Prompt

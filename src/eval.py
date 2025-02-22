@@ -16,7 +16,7 @@ import sys
 import signal
 from contextlib import contextmanager
 
-from . import utils
+# from . import utils
 
 REPO_TOP_PATH = os.path.abspath(
     os.path.join(
@@ -149,7 +149,7 @@ def load_custom_model(
         ) + model_custom_src
 
     try:
-        with time_limit(10): 
+        with time_limit(120): 
             exec(model_custom_src, context)
     except TimeoutException as e:
         print(f"Execution timed out: {e}")
