@@ -10,29 +10,37 @@ from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
 from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
-from src.reward import reward_fn, format_reward
+from src.reward import reward_fn, compute_format_reward
 from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
+        self.seed = 103
+        self.verbose = True
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
         self.learning_rate = 1e-5
         self.max_tokens = 4096
-        
+
         # GRPO configuration
-        self.num_generations = 3  # Number of generations per prompt
+        self.num_generations = 6 # Number of generations per prompt
         self.beta = 0.001  # KL coefficient
         self.temperature = 0.7
         
         # Training configuration
-        self.num_epochs = 20
+        self.num_epochs = 10
         self.batch_size = 1
-        self.gradient_accumulation_steps = 1
+        self.gradient_accumulation_steps = 2
         self.gradient_checkpointing = True
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.7
         self.optim = "adamw_torch"
+
+        # Evaluation configuration
+        self.do_eval = False
+        self.per_device_eval_batch_size = self.batch_size
+        self.eval_strategy = "steps" if self.do_eval else "no"
+        self.eval_steps = 20
 
         # Dataset configuration
         self.level = 1
@@ -48,11 +56,11 @@ class TrainingConfig(Config):
         self.output_dir = "runs/grpo_training"
         self.response_output_dir = "outputs"
 
-        self.full_finetune = True
+        self.full_finetune = False # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
-        self.lora_dropout = 0.01
+        self.lora_dropout = 0.0
         self.lora_target_modules = [
             "q_proj", "k_proj", "v_proj", "o_proj", 
             "gate_proj", "down_proj", "up_proj"
@@ -86,7 +94,7 @@ def main(config: TrainingConfig):
         for i, problem in enumerate(tqdm(train_problems, desc="Processing problems")):
             ref_arch_src = read_file(problem)
             task_id = int(os.path.basename(problem).split('_')[0])
-            baseline_stats = measure_program_time(problem, ref_arch_src)
+            baseline_stats = measure_program_time(problem, ref_arch_src, verbose=True)
             if baseline_stats is None:
                 print(f"Skipping problem {problem} due to baseline measurement error")
                 continue
@@ -94,12 +102,6 @@ def main(config: TrainingConfig):
             ref_arch_srcs.append(ref_arch_src)
             levels.append(config.level)
             task_ids.append(task_id)
-            if i == 20:
-                print("Example data in iteration i == 20")
-                print("Task ID: ", task_id)
-                print("Level: ", config.level)
-                print("Baseline Runtime: ", baseline_stats["mean"])
-                print("Ref Arch Src: ", ref_arch_src)
 
         data = {
             "ref_arch_src": ref_arch_srcs,
@@ -128,6 +130,16 @@ def main(config: TrainingConfig):
 
     print(f"Dataset size: {len(dataset)}")
 
+    # Split into train and eval
+    split_dataset = dataset.train_test_split(test_size=0.01, seed=config.seed, shuffle=False)
+    train_dataset = split_dataset["train"]
+    eval_dataset = split_dataset["test"]
+    print(f"Train dataset size: {len(train_dataset)}")
+    print(f"Eval dataset size: {len(eval_dataset)}")
+    if config.verbose:
+        print("Evaluation dataset indices:")
+        print(eval_dataset["task_id"])
+
     model_kwargs = dict(
         attn_implementation="flash_attention_2",
         torch_dtype="bfloat16",
@@ -144,7 +156,7 @@ def main(config: TrainingConfig):
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         gradient_checkpointing=config.gradient_checkpointing,
-        max_prompt_length=None,
+        max_prompt_length=512,
         max_completion_length=config.max_tokens,
         num_generations=config.num_generations,
         temperature=config.temperature,
@@ -152,35 +164,40 @@ def main(config: TrainingConfig):
         bf16=True,
         use_vllm=config.use_vllm,
         vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
+        vllm_max_model_len=8192,
         optim=config.optim,
         report_to=["wandb"],
         logging_steps=1,
-        save_steps=10,
-        save_total_limit=10
+        save_steps=50,
+        save_total_limit=3,
+        do_eval=config.do_eval,
+        per_device_eval_batch_size=config.per_device_eval_batch_size,
+        eval_strategy=config.eval_strategy,
+        eval_steps=config.eval_steps,
+        seed=config.seed,
     )
 
-    if config.full_finetune:
-        model = config.model_name
-    else:
-        # Create model and apply LoRA
+    peft_config = None
+
+
+    if not config.full_finetune:
         model = AutoModelForCausalLM.from_pretrained(
             config.model_name,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            attn_implementation="flash_attention_2"
+            attn_implementation="flash_attention_2",
+        torch_dtype=torch.bfloat16,
+            use_cache=False if config.gradient_checkpointing else True,
         )
-    
-        lora_config = LoraConfig(
+        peft_config = LoraConfig(
             r=config.lora_r,
             lora_alpha=config.lora_alpha,
             target_modules=config.lora_target_modules,
             lora_dropout=config.lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM"
+            bias="none"
         )
-
-        model = get_peft_model(model, lora_config)
-        model.print_trainable_parameters()
+        model.enable_input_require_grads()
+        model = get_peft_model(model, peft_config)
+        # print("Compiling model")
+        # model = torch.compile(model)
 
     # Create reward function that takes in trainer
     def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
@@ -189,12 +206,14 @@ def main(config: TrainingConfig):
 
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[compute_reward, format_reward],
+        reward_funcs=[compute_reward, compute_format_reward],
         args=training_args,
-        train_dataset=dataset,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         processing_class=tokenizer,
+        peft_config=peft_config
     )
-    
+
     # Train model
     print("Starting training...")
     trainer.train()
