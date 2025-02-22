@@ -1,5 +1,6 @@
 from pydra import Config
 import os
+import re
 import json
 import pydra
 import numpy as np
@@ -34,7 +35,6 @@ def process_file(file_path: str, config: BuildConfig):
         if not (result['compiled'] and result.get('correctness', False)):
             continue
             
-        # Calculate speedup
         if not (result.get('runtime') and result.get('runtime_original')):
             continue
             
@@ -42,10 +42,9 @@ def process_file(file_path: str, config: BuildConfig):
         if speedup < config.min_speedup:
             continue
             
-        # Extract the CUDA code from the generation
         content = gen['content']
         parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$"
-        import re
+
         match = re.match(parse_pattern, content, re.DOTALL)
         if not match:
             continue
@@ -99,14 +98,14 @@ def main(config: BuildConfig):
     output_path = os.path.join(config.output_dir, config.output_file)
     with open(output_path, 'w') as f:
         json.dump({
-            "examples": all_examples,
+            "train": all_examples,
         }, f, indent=2)
     
     top_k_examples = get_top_k_examples(all_examples, config.top_k)
     top_k_output_path = os.path.join(config.output_dir, config.top_k_output_file)
     with open(top_k_output_path, 'w') as f:
         json.dump({
-            "examples": top_k_examples,
+            "train": top_k_examples,
         }, f, indent=2)
     
     print(f"Total examples collected: {len(all_examples)}")

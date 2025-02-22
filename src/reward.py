@@ -17,13 +17,12 @@ def calculate_kernel_reward(
         performance_reward = speedup 
     else:
         performance_reward = 0.0
-        
+  
     # total_reward = compilation_reward +correctness_reward + performance_reward
     
     return (compilation_reward, correctness_reward, performance_reward)
 
 def compute_format_reward(completions, **kwargs):
-    """Reward function that checks if the reasoning process is enclosed within <think> and </think> tags, while the final answer is enclosed within <answer> and </answer> tags."""
     pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
     completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]

@@ -56,7 +56,7 @@ def main(config: GenerationConfig):
                 for choice in response.choices
             ]
         }
-        
+
         output_path = os.path.join(config.output_dir, f"{problem_name}.json")
         with open(output_path, "w") as f:
             json.dump(output_data, f, indent=2)
