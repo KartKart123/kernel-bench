@@ -38,14 +38,14 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for correctness and speedup. 
-You are writing kernels for a NVIDIA H100 GPU, so keep in mind tiling, fusion, memory hierarchy, and tensor cores. 
-Name your optimized output architecture ModelNew."""
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for performance.
+Use torch.utils.cpp_extension.load_inline and name your optimized output architecture ModelNew (you can assume that the input will be on CUDA device).
+Your answer should be real code (no pseudocode, no testing code, no other text), and make sure the code is correct.\n"""
 
-CUSTOM_PROBLEM_INSTRUCTION = """
-Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>. \n
-Your answer should be real code (no pseudocode, no testing code,no other text), and make sure the code compiles and is fully functional. Do NOT cheat by calling torch.nn functions in your code.\n
-"""
+# CUSTOM_PROBLEM_INSTRUCTION = """
+# Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>. \n
+# Your answer should be real code (no pseudocode, no testing code,no other text), and make sure the code compiles and is fully functional.\n
+# """
 
 def custom_prompt_generate_custom_cuda(
     arc_src: str
@@ -58,14 +58,13 @@ def custom_prompt_generate_custom_cuda(
     )
     example_arch_src = read_file(example_arch_path)
     example_new_arch_src = read_file(example_new_arch_path)
-    prompt = f"""You are an expert CUDA programmer specializing in kernel optimization.
-    You are given the following architecture:
+    prompt = f"""You are given the following architecture:\n
     ```
-    {arc_src}
-    ```
+    {fetch_info(arc_src)}
+    ```\n
     """
     prompt += CUSTOM_PROBLEM_STATEMENT
-    prompt += CUSTOM_PROBLEM_INSTRUCTION
+    #prompt += CUSTOM_PROBLEM_INSTRUCTION
     if example_arch_src != "" and example_new_arch_src != "":
         # prompt += f"""
         # Here's an example of output to show you the syntax of inline embedding custom CUDA operators in torch:
@@ -75,15 +74,10 @@ def custom_prompt_generate_custom_cuda(
         # ```
         # </answer>
         # """
-        prompt += f"""
-        Here's an example to show you the syntax of inline embedding custom CUDA operators in torch. The example given architecture is: \n
-        ``` \n
-        {fetch_info(example_arch_src)}
-        ``` \n
-        The example new arch with custom CUDA kernels looks like this: 
+        prompt += f"""Here's an example to show you the syntax of inline embedding custom CUDA operators in torch:
         ```
         {example_new_arch_src}
-        ``` \n
+        ```
         """
     return prompt
 
