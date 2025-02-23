@@ -18,9 +18,9 @@ class TrainingConfig(Config):
         self.seed = 11
         self.verbose = True
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
+        self.model_name = "runs/merged_model" #"deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 4096
+        self.max_tokens = 16384
 
         # GRPO configuration
         self.num_generations = 7 # Number of generations per prompt
@@ -31,9 +31,9 @@ class TrainingConfig(Config):
         self.num_epochs = 10
         self.batch_size = 1
         self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = False
+        self.gradient_checkpointing = True
         self.use_vllm = True
-        self.vllm_gpu_memory_utilization = 0.7
+        self.vllm_gpu_memory_utilization = 0.5
         self.optim = "adamw_torch"
 
         # Evaluation configuration
@@ -56,7 +56,7 @@ class TrainingConfig(Config):
         self.output_dir = "runs/grpo_training"
         self.response_output_dir = "outputs"
 
-        self.full_finetune = False # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
+        self.full_finetune = True # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
@@ -123,7 +123,6 @@ def main(config: TrainingConfig):
     dataset = Dataset.from_dict({
         "prompt": train_prompts,
         "ref_arch_src": data["ref_arch_src"],
-        "baseline_runtime": data["baseline_runtime"],
         "level": data["level"],
         "task_id": data["task_id"],
     })
@@ -200,8 +199,8 @@ def main(config: TrainingConfig):
         # model = torch.compile(model)
 
     # Create reward function that takes in trainer
-    def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
-        return reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, 
+    def compute_reward(prompts, completions, ref_arch_src, level, task_id, **kwargs):
+        return reward_fn(prompts, completions, ref_arch_src, level, task_id, 
                          trainer, output_dir=config.response_output_dir, **kwargs)
 
     trainer = GRPOTrainer(
