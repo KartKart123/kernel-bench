@@ -5,8 +5,7 @@ import json
 from src.eval import KernelExecResult, eval_kernel_against_ref
 
 def calculate_kernel_reward(
-    eval_result: KernelExecResult,
-    baseline_runtime: float
+    eval_result: KernelExecResult
 ) -> float:
     if eval_result is None:
         return 0.0
@@ -23,19 +22,19 @@ def calculate_kernel_reward(
     return (compilation_reward, correctness_reward, performance_reward)
 
 def compute_format_reward(completions, **kwargs):
-    pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
+    pattern = r"^<think>.*?</think>\s*'''python\s*.*?'''\s*$"
     completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
 
-def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, trainer, output_dir="outputs", **kwargs):
+def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, output_dir="outputs", **kwargs):
     os.makedirs(output_dir, exist_ok=True)
     rewards = []
     current_step = trainer.state.global_step
     device = trainer.model.device
     parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$" #TODO change it
-    format_pattern = r"^<think>.*?</think>\s*<answer>.*?</answer>$"
-    for prompt, completion, runtime, ref_arch, ind_level, id in zip(prompts, completions, baseline_runtime, ref_arch_src, level, task_id):
+    format_pattern = r"^<think>.*?</think>\s*'''python\s*.*?'''\s*$"
+    for prompt, completion, ref_arch, ind_level, id in zip(prompts, completions, ref_arch_src, level, task_id):
         reward = 0.0
         content = completion[0]["content"]
         match = re.match(parse_pattern, content, re.DOTALL)
@@ -89,8 +88,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
         print(eval_result)
         # input()
         compilation_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
-            eval_result=eval_result,
-            baseline_runtime=runtime
+            eval_result=eval_result
         )
 
         # Compute total reward
@@ -124,7 +122,6 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             "compiled": eval_result.compiled,
             "correctness": eval_result.correctness,
             "runtime": eval_result.runtime,
-            "baseline_runtime": runtime,
             "format_reward": format_reward,
             "compilation_reward": compilation_reward,
             "correctness_reward": correctness_reward,
