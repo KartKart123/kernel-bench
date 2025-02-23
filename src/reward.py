@@ -25,11 +25,11 @@ def calculate_kernel_reward(
     
     return (compilation_reward, correctness_reward, performance_reward)
 
-def compute_format_reward(completions, **kwargs):
-    pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
-    completion_contents = [completion[0]["content"] for completion in completions]
-    matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
-    return [0.5 if match else 0.0 for match in matches]
+# def compute_format_reward(completions, **kwargs):
+#     pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
+#     completion_contents = [completion[0]["content"] for completion in completions]
+#     matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
+#     return [0.5 if match else 0.0 for match in matches]
 
 def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, output_dir="outputs", **kwargs):
     process_index = trainer.accelerator.process_index
@@ -37,7 +37,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
     current_step = trainer.state.global_step
     device = trainer.model.device
     parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$" #TODO change it
-    format_pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
+    # format_pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
     verbose = False
 
     # Make cache directory for eval results
@@ -60,10 +60,10 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
             rewards.append(reward)
             continue
 
-        format_match = re.match(format_pattern, content, re.DOTALL)
-        if format_match is None:
-            print(f"[Reward {process_index}] had no format match")
-        format_reward = 0.5 if format_match else 0.0 # Just for saving to output; Won't be added to reward
+        # format_match = re.match(format_pattern, content, re.DOTALL)
+        # if format_match is None:
+        #     print(f"[Reward {process_index}] had no format match")
+        # format_reward = 0.5 if format_match else 0.0 # Just for saving to output; Won't be added to reward
 
         #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])
         custom_cuda = match.group(1).strip() 
@@ -203,11 +203,11 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
             "error_type": eval_result.metadata["error_type"] if "error_type" in eval_result.metadata else None,
             "error_msg": eval_result.metadata["error_msg"] if "error_msg" in eval_result.metadata else None,
             "runtime": eval_result.runtime,
-            "format_reward": format_reward,
+            # "format_reward": format_reward,
             "compilation_reward": compilation_reward,
             "correctness_reward": correctness_reward,
             "performance_reward": performance_reward,
-            "reward": reward + format_reward,
+            "reward": reward,
             "prompt": prompt[0]["content"],
             "response": content,
         }
