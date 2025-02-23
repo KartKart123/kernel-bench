@@ -15,12 +15,13 @@ from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
     def __init__(self):
-        self.seed = 103
+        self.seed = 11
         self.verbose = True
         # Model configuration
+        # self.model_name = "/home/ubuntu/kernel-bench/runs/sft/checkpoint-198" 
         self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 4096
+        self.max_tokens = 16384
 
         # GRPO configuration
         self.num_generations = 7 # Number of generations per prompt
@@ -30,14 +31,11 @@ class TrainingConfig(Config):
         # Training configuration
         self.num_epochs = 10
         self.batch_size = 1
-        self.gradient_accumulation_steps = 2
+        self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = True
-        self.optim = "adamw_torch"
-
-        # vLLM configuration
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.5
-        self.vllm_max_model_len = 8192
+        self.optim = "adamw_torch"
 
         # Evaluation configuration
         self.do_eval = False
@@ -123,25 +121,32 @@ def main(config: TrainingConfig):
         prompt = custom_prompt_generate_custom_cuda(ref_arch_src)#, gpu_name=config.gpu_name)
         # train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
         train_prompts.append([{"role": "user", "content": prompt}])
+
+    selected_indices = [15, 30, 45, 12, 14, 21, 26, 32, 38, 10, 19, 29]
+    selected_indices = [i - 1 for i in selected_indices]
     dataset = Dataset.from_dict({
-        "prompt": train_prompts,
-        "ref_arch_src": data["ref_arch_src"],
-        "baseline_runtime": data["baseline_runtime"],
-        "level": data["level"],
-        "task_id": data["task_id"],
+        "prompt": [train_prompts[i] for i in selected_indices],
+        "ref_arch_src": [data["ref_arch_src"][i] for i in selected_indices],
+        "level": [data["level"][i] for i in selected_indices],
+        "task_id": [data["task_id"][i] for i in selected_indices],
     })
 
     print(f"Dataset size: {len(dataset)}")
 
     # Split into train and eval
-    split_dataset = dataset.train_test_split(test_size=0.01, seed=config.seed, shuffle=False)
-    train_dataset = split_dataset["train"]
-    eval_dataset = split_dataset["test"]
+    if config.do_eval:
+        split_dataset = dataset.train_test_split(test_size=0.2, seed=config.seed, shuffle=False)
+        train_dataset = split_dataset["train"]
+        eval_dataset = split_dataset["test"]
+        print(f"Eval dataset size: {len(eval_dataset)}")
+    else:
+        train_dataset = dataset
+        eval_dataset = None
     print(f"Train dataset size: {len(train_dataset)}")
-    print(f"Eval dataset size: {len(eval_dataset)}")
+    
     if config.verbose:
-        print("Evaluation dataset indices:")
-        print(eval_dataset["task_id"])
+        print("Train dataset indices:")
+        print(train_dataset["task_id"])
 
     model_kwargs = dict(
         attn_implementation="flash_attention_2",
@@ -159,7 +164,7 @@ def main(config: TrainingConfig):
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         gradient_checkpointing=config.gradient_checkpointing,
-        max_prompt_length=512,
+        max_prompt_length=None,
         max_completion_length=config.max_tokens,
         num_generations=config.num_generations,
         temperature=config.temperature,
@@ -167,7 +172,6 @@ def main(config: TrainingConfig):
         bf16=True,
         use_vllm=config.use_vllm,
         vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
-        vllm_max_model_len=config.vllm_max_model_len,
         optim=config.optim,
         report_to=["wandb"],
         logging_steps=1,
@@ -187,7 +191,7 @@ def main(config: TrainingConfig):
         model = AutoModelForCausalLM.from_pretrained(
             config.model_name,
             attn_implementation="flash_attention_2",
-        torch_dtype=torch.bfloat16,
+            torch_dtype=torch.bfloat16,
             use_cache=False if config.gradient_checkpointing else True,
         )
         peft_config = LoraConfig(
@@ -203,9 +207,10 @@ def main(config: TrainingConfig):
         # print("Compiling model")
         # model = torch.compile(model)
 
+    os.makedirs(config.response_output_dir, exist_ok=True)
     # Create reward function that takes in trainer
-    def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
-        return reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, 
+    def compute_reward(prompts, completions, ref_arch_src, level, task_id, **kwargs):
+        return reward_fn(prompts, completions, ref_arch_src, level, task_id, 
                          trainer, output_dir=config.response_output_dir, **kwargs)
 
     trainer = GRPOTrainer(
