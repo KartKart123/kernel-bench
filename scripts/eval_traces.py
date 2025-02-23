@@ -129,12 +129,13 @@ def main(config: EvalTracesConfig):
     
     chunks = [[] for _ in range(num_gpus)]
     cnt = 0
-    finished_list = [1, 2, 4, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 22, 24, 26, 27, 28, 29, 31, 34, 35, 36, 41, 42, 43, 49, 50, 56, 57, 63, 64, 70, 78, 100]
+    # finished_list = [1, 2, 4, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 22, 24, 26, 27, 28, 29, 31, 34, 35, 36, 41, 42, 43, 49, 50, 56, 57, 63, 64, 70, 78, 100]
+    todo_list = [6, 7, 8, 9, 12, 16, 17, 18, 48, 79, 86, 87, 89, 90, 92, 93, 94, 96, 97, 98]
     for i, file in enumerate(files):
         if file.startswith('eval'):
             continue
         idx = int(file.split('_')[0])
-        if idx not in finished_list:
+        if idx in todo_list:
             chunks[cnt % num_gpus].append(file)
             cnt += 1
     

@@ -379,11 +379,13 @@ def eval_kernel_against_ref(
     metadata["hardware"] = torch.cuda.get_device_name(device=device)
     metadata["device"] = str(device)  # for debugging
 
+    stdout_buffer = StringIO()
     # this is where compilation happens
     try:
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
-        ModelNew = load_custom_model(custom_model_src, context, build_dir)
+        with redirect_stdout(stdout_buffer), redirect_stderr(stdout_buffer):
+            ModelNew = load_custom_model(custom_model_src, context, build_dir)
         torch.cuda.synchronize(device=device)  # not sure if this is too much
         if ModelNew is None:
             raise RuntimeError("ModelNew is None")
@@ -403,6 +405,8 @@ def eval_kernel_against_ref(
             return None
         else:
             metadata["compilation_error"] = e
+            print(f"[Eval] got the following in the buffer: XX{stdout_buffer.getvalue()}XX")
+            metadata["compilation_error_message"] = stdout_buffer.getvalue()
             graceful_eval_cleanup(context, device)
             return KernelExecResult(
                 compiled=False, metadata=metadata
@@ -444,6 +448,7 @@ def eval_kernel_against_ref(
             seed=seed_num,
             device=device,
         )
+
     except Exception as e:
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
         metadata["runtime_error"] = e
@@ -495,6 +500,8 @@ def eval_kernel_against_ref(
                 kernel_exec_result.runtime_stats = runtime_stats
                 kernel_exec_result.runtime_original = runtime_stats_original["mean"]
                 kernel_exec_result.runtime_stats_original = runtime_stats_original
+                kernel_exec_result.metadata["speedup"] = runtime_stats_original["mean"] / runtime_stats["mean"]
+
         except Exception as e:
             if verbose:
                 print(f"[Eval] Error in Measuring Performance: {e}")

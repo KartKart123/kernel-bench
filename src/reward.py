@@ -2,9 +2,7 @@ import torch
 import re
 import os
 import json
-from src.eval_ben import KernelExecResult, eval_kernel_against_ref
-from multiprocessing import Process, Queue
-from functools import partial
+from src.safe_eval import KernelExecResult
 import subprocess
 import sys
 import tempfile
@@ -15,7 +13,7 @@ def calculate_kernel_reward(
 ) -> float:
     if eval_result is None:
         return 0.0
-    compilation_reward = float(eval_result.compiled)/2/2
+    compilation_reward = float(eval_result.compiled)/2
     correctness_reward = float(eval_result.correctness)
     if eval_result.correctness and eval_result.runtime > 0:
         speedup = eval_result.runtime_original / eval_result.runtime
@@ -158,9 +156,6 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
 
         # Compute total reward
         reward += compilation_reward + correctness_reward + performance_reward
-        #reward += correctness_reward + performance_reward
-        reward += compilation_reward + correctness_reward + performance_reward
-        #reward += correctness_reward + performance_reward
         rewards.append(reward)
         # print(reward)
         # input()

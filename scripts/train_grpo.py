@@ -18,13 +18,13 @@ class TrainingConfig(Config):
         self.seed = 103
         self.verbose = True
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" 
         self.learning_rate = 1e-5
         self.max_tokens = 4096
 
         # GRPO configuration
         self.num_generations = 6 # Number of generations per prompt
-        self.beta = 0.001  # KL coefficient
+        self.beta = 0  # KL coefficient
         self.temperature = 0.7
         
         # Training configuration
@@ -32,9 +32,12 @@ class TrainingConfig(Config):
         self.batch_size = 1
         self.gradient_accumulation_steps = 2
         self.gradient_checkpointing = True
-        self.use_vllm = True
-        self.vllm_gpu_memory_utilization = 0.7
         self.optim = "adamw_torch"
+
+        # vLLM configuration
+        self.use_vllm = True
+        self.vllm_gpu_memory_utilization = 0.5
+        self.vllm_max_model_len = 8192
 
         # Evaluation configuration
         self.do_eval = False
@@ -56,7 +59,7 @@ class TrainingConfig(Config):
         self.output_dir = "runs/grpo_training"
         self.response_output_dir = "outputs"
 
-        self.full_finetune = False # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
+        self.full_finetune = True # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
@@ -164,7 +167,7 @@ def main(config: TrainingConfig):
         bf16=True,
         use_vllm=config.use_vllm,
         vllm_gpu_memory_utilization=config.vllm_gpu_memory_utilization,
-        vllm_max_model_len=8192,
+        vllm_max_model_len=config.vllm_max_model_len,
         optim=config.optim,
         report_to=["wandb"],
         logging_steps=1,
@@ -178,7 +181,7 @@ def main(config: TrainingConfig):
     )
 
     peft_config = None
-
+    model = config.model_name
 
     if not config.full_finetune:
         model = AutoModelForCausalLM.from_pretrained(
