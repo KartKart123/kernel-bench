@@ -184,23 +184,16 @@ def _cleanup_cuda_extensions():
 
 
 def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.device):
-    print(f"PROCESS {process_index} reached graceful_eval")
     try:
         """
         Clean up env, gpu cache, and compiled CUDA extensions after evaluation
         """  # delete ran-specific function definitions before next eval run
         del curr_context
-        return
         # # Clear CUDA cache and reset GPU state
-        # with torch.cuda.device(device):
-        #     print(f"Process {process_index} reached barrier")
-        #     print("Past barrier")
-        #     if process_index == 0:  # Main process
-        #         print("Starting to clear cache")
-        #         torch.cuda.empty_cache()
-        #         print("Cleared cache, now resetting peak memory stats")
-        #         torch.cuda.reset_peak_memory_stats(device=device)
-        #         print("Finished clearing cache")
+        with torch.cuda.device(device):
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats(device=device)
+        print(f"PROCESS {process_index} finished graceful_eval_cleanup")
     except Exception as e:
         print(e, "graceful_eval_cleanup encountered an error")
 
@@ -354,6 +347,8 @@ def eval_kernel_against_ref(
         linewidth=80,  # Maximum width before wrapping
     )
 
+    # Run eval on the same GPU
+    device = process_index
     # set CUDA device
     torch.cuda.set_device(device)
 
@@ -364,7 +359,7 @@ def eval_kernel_against_ref(
     metadata["process"] = process_index  
 
     if verbose:
-        print(f"[Eval {process_index}] Start Evalulation! on process {process_index} and device {device}")
+        print(f"[Eval {process_index}] Start Evalulation of process {process_index} and on device {device}")
         print(f"[Eval {process_index}] Loading Original Model")
 
     Model, get_init_inputs, get_inputs = load_original_model_and_inputs(
