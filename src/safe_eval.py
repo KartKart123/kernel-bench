@@ -193,7 +193,8 @@ def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.devic
         with torch.cuda.device(device):
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats(device=device)
-        print(f"PROCESS {process_index} finished graceful_eval_cleanup")
+            torch.cuda.synchronize(device=device)
+        # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
     except Exception as e:
         print(e, "graceful_eval_cleanup encountered an error")
 

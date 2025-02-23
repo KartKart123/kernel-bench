@@ -8,15 +8,16 @@ import sys
 import tempfile
 
 def calculate_kernel_reward(
-    eval_result: KernelExecResult
+    eval_result: KernelExecResult,
+    # baseline_runtime: float
 ) -> float:
     if eval_result is None:
         return 0.0
-    compilation_reward = float(eval_result.compiled)/2
-    correctness_reward = float(eval_result.correctness)
+    compilation_reward = float(eval_result.compiled)
+    correctness_reward = float(eval_result.correctness) * 3
     if eval_result.correctness and eval_result.runtime > 0:
         speedup = eval_result.runtime_original / eval_result.runtime
-        performance_reward = speedup 
+        performance_reward = speedup * 4
     else:
         performance_reward = 0.0
   
@@ -25,20 +26,19 @@ def calculate_kernel_reward(
     return (compilation_reward, correctness_reward, performance_reward)
 
 def compute_format_reward(completions, **kwargs):
-    pattern = r"^<think>.*?</think>\s*'''python\s*.*?'''\s*$"
+    pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
     completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
-    return [1.0 if match else 0.0 for match in matches]
+    return [0.5 if match else 0.0 for match in matches]
 
-def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, trainer, output_dir="outputs", **kwargs):
+def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, output_dir="outputs", **kwargs):
     process_index = trainer.accelerator.process_index
-    # print(f"[Reward {process_index}] STARTING")
-    os.makedirs(output_dir, exist_ok=True)
     rewards = []
     current_step = trainer.state.global_step
     device = trainer.model.device
     parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$" #TODO change it
-    format_pattern = r"^<think>.*?</think>\s*'''python\s*.*?'''\s*$"
+    format_pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
+    verbose = False
 
     # Make cache directory for eval results
     eval_cache_dir = f"{output_dir}/eval_cache"
@@ -48,29 +48,37 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
     for prompt, completion, ref_arch, ind_level, id in zip(prompts, completions, ref_arch_src, level, task_id):
         reward = 0.0
         content = completion[0]["content"]
+        if verbose: 
+            print("=" * 80)
+            print(f"[Reward {process_index}] Task ID: {id}")
+            print(content)
+
         match = re.match(parse_pattern, content, re.DOTALL)
-        # print(content)
-        # input()
         if match is None:
-            print(f"PROCESS {process_index} had no match")
+            print(f"[Reward {process_index} EXIT] had no match")
+            print(content)
             rewards.append(reward)
             continue
 
         format_match = re.match(format_pattern, content, re.DOTALL)
-        format_reward = 1.0 if format_match else 0.0 # Just for saving to output; Won't be added to reward
+        if format_match is None:
+            print(f"[Reward {process_index}] had no format match")
+        format_reward = 0.5 if format_match else 0.0 # Just for saving to output; Won't be added to reward
 
         #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])
-        custom_cuda = match.group(1).strip()
-        for code_type in ["python", "cpp"]:
+        custom_cuda = match.group(1).strip() 
+        for code_type in ["python", "cpp", "cuda"]:
             if custom_cuda.startswith(code_type):
                 custom_cuda = custom_cuda[len(code_type) :].strip()
     
-        # print(f"[Reward {process_index}] main process output kernel (custom_cuda):")
-        # print(custom_cuda)
+        if verbose:
+            print(f"[Reward {process_index}] main process output kernel (custom_cuda):")
+            print(custom_cuda)
 
-        if ("__global__" not in custom_cuda) or ("load_inline(" not in custom_cuda) or ("try:" in content) or ("pass" in content):
+        if ("__global__" not in custom_cuda) or ("load_inline(" not in custom_cuda) or ("try:" in custom_cuda) or ("pass" in custom_cuda):
+            print(f"[Reward {process_index} EXIT] output has no cuda kernel")
+            print(custom_cuda)
             rewards.append(reward)
-            print(f"[Reward {process_index}] output has no cuda kernel")
             continue
 
         reward += 0.5
@@ -107,35 +115,22 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
         eval_result = KernelExecResult()
         try:
             result = subprocess.run(
-                [sys.executable, "src/eval_script.py", ref_path, custom_path, str(process_index), eval_cache_path],
+                [sys.executable, "src/safe_eval_script.py", ref_path, custom_path, str(process_index), eval_cache_path],
                 timeout=120,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.PIPE,
+                stdout=None,
+                stderr=None,
                 text=True
             )
             
-            process_out = result.stdout
-            process_err = result.stderr
+            # process_out = result.stdout
+            # process_err = result.stderr
 
-            # Parse CUDA compilation errors
-            cuda_compilation_error_messages = []
-            lines = process_out.split('\n')
-            i = 0
-            while i < len(lines):
-                if "error: " in lines[i]:
-                    error_start = lines[i].find("error: ") + len("error: ")
-                    error_message = lines[i][error_start:]
-                    
-                    # Keep adding lines until we find one containing "/home"
-                    j = i + 1
-                    while j < len(lines) and "/home/ubuntu" not in lines[j]:
-                        error_message += " " + lines[j]
-                        j += 1
-                    
-                    cuda_compilation_error_messages.append(error_message.strip())
-                    i = j
-                else:
-                    i += 1
+            # # Parse CUDA compilation errors using regex
+            # error_pattern = r"error: (.*?)(?=/home)"
+            # error_messages = re.findall(error_pattern, process_out, re.DOTALL)
+            # error_messages = [msg.strip() for msg in error_messages]
 
             if result.returncode != 0:
                 print(f"[Reward {process_index}] Evaluation failed with return code {result.returncode}")
@@ -144,7 +139,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
                 with open(eval_cache_path, 'r') as f:
                     output = json.load(f)
                 os.unlink(eval_cache_path)  # Clean up the temp file
-                output["metadata"]["cuda_compilation_error_messages"] = cuda_compilation_error_messages
+                # output["metadata"]["cuda_compilation_error_messages"] = error_messages
 
                 eval_result = KernelExecResult(
                     compiled=output["compiled"],
@@ -205,6 +200,8 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             "device": device.index,
             "compiled": eval_result.compiled,
             "correctness": eval_result.correctness,
+            "error_type": eval_result.metadata["error_type"] if "error_type" in eval_result.metadata else None,
+            "error_msg": eval_result.metadata["error_msg"] if "error_msg" in eval_result.metadata else None,
             "runtime": eval_result.runtime,
             "format_reward": format_reward,
             "compilation_reward": compilation_reward,
