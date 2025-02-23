@@ -97,16 +97,12 @@ def main(config: BuildConfig):
     
     output_path = os.path.join(config.output_dir, config.output_file)
     with open(output_path, 'w') as f:
-        json.dump({
-            "train": all_examples,
-        }, f, indent=2)
+        json.dump(all_examples, f, indent=2)
     
     top_k_examples = get_top_k_examples(all_examples, config.top_k)
     top_k_output_path = os.path.join(config.output_dir, config.top_k_output_file)
     with open(top_k_output_path, 'w') as f:
-        json.dump({
-            "train": top_k_examples,
-        }, f, indent=2)
+        json.dump(top_k_examples, f, indent=2)
     
     print(f"Total examples collected: {len(all_examples)}")
     

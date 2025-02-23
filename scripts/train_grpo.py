@@ -23,7 +23,7 @@ class TrainingConfig(Config):
         self.max_tokens = 4096
 
         # GRPO configuration
-        self.num_generations = 6 # Number of generations per prompt
+        self.num_generations = 7 # Number of generations per prompt
         self.beta = 0  # KL coefficient
         self.temperature = 0.7
         
@@ -195,7 +195,8 @@ def main(config: TrainingConfig):
             lora_alpha=config.lora_alpha,
             target_modules=config.lora_target_modules,
             lora_dropout=config.lora_dropout,
-            bias="none"
+            bias="none",
+            task_type="CAUSAL_LM"
         )
         model.enable_input_require_grads()
         model = get_peft_model(model, peft_config)
