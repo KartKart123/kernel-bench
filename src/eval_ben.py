@@ -45,30 +45,30 @@ def fetch_kernel_from_database(
     return response_json
 
 
-def fetch_ref_arch_from_problem_id(problem_id, problems, with_name=False) -> str:
-    """
-    Fetches the reference architecture in string for a given problem_id
-    """
-    if isinstance(problem_id, str):
-        problem_id = int(problem_id)
+# def fetch_ref_arch_from_problem_id(problem_id, problems, with_name=False) -> str:
+#     """
+#     Fetches the reference architecture in string for a given problem_id
+#     """
+#     if isinstance(problem_id, str):
+#         problem_id = int(problem_id)
 
-    problem_path = problems[problem_id]
+#     problem_path = problems[problem_id]
 
-    # problem_path = os.path.join(REPO_ROOT_PATH, problem)
-    if not os.path.exists(problem_path):
-        raise FileNotFoundError(f"Problem file at {problem_path} does not exist.")
+#     # problem_path = os.path.join(REPO_ROOT_PATH, problem)
+#     if not os.path.exists(problem_path):
+#         raise FileNotFoundError(f"Problem file at {problem_path} does not exist.")
 
-    ref_arch = utils.read_file(problem_path)
-    if not with_name:
-        return ref_arch
-    else:
-        return (problem_path, ref_arch)
+#     ref_arch = utils.read_file(problem_path)
+#     if not with_name:
+#         return ref_arch
+#     else:
+#         return (problem_path, ref_arch)
 
 
-def fetch_ref_arch_from_level_problem_id(level, problem_id, with_name=False):
-    PROBLEM_DIR = os.path.join(KERNEL_BENCH_PATH, "level" + str(level))
-    dataset = utils.construct_problem_dataset_from_problem_dir(PROBLEM_DIR)
-    return fetch_ref_arch_from_problem_id(problem_id, dataset, with_name)
+# def fetch_ref_arch_from_level_problem_id(level, problem_id, with_name=False):
+#     PROBLEM_DIR = os.path.join(KERNEL_BENCH_PATH, "level" + str(level))
+#     dataset = utils.construct_problem_dataset_from_problem_dir(PROBLEM_DIR)
+#     return fetch_ref_arch_from_problem_id(problem_id, dataset, with_name)
 
 
 def set_seed(seed: int):
@@ -362,7 +362,6 @@ def eval_kernel_against_ref(
     metadata = {}  # for storing result metadata
     # metadata["hardware"] = torch.cuda.get_device_name(device=device)
     metadata["process"] = process_index  
-    # metadata["error"] = False
 
     if verbose:
         print(f"[Eval {process_index}] Start Evalulation! on process {process_index} and device {device}")
@@ -383,7 +382,14 @@ def eval_kernel_against_ref(
     with torch.no_grad():
         set_seed(seed_num)  # set seed for reproducible weights
         original_model = Model(*init_inputs)
-        assert hasattr(original_model, "forward")
+        if not hasattr(original_model, "forward"):
+            print(f"[Error {process_index}] Original model does not have a forward method")
+            metadata = register_and_format_exception(
+                "runtime_error", 
+                "Original model does not have a forward method", 
+                metadata
+            )
+            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
         if verbose:
             print(f"[Eval {process_index}] Original Model Loaded")
     if verbose:
@@ -393,10 +399,12 @@ def eval_kernel_against_ref(
     try:
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
-        ModelNew = load_custom_model(custom_model_src, context, build_dir)
+        ModelNew = load_custom_model(custom_model_src, context, build_dir, metadata, process_index)
         torch.cuda.synchronize(device=device)  # not sure if this is too much
         if ModelNew is None:
-            raise RuntimeError("ModelNew is None")
+            # raise RuntimeError("ModelNew is None")
+            graceful_eval_cleanup(process_index, context, device)
+            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
     except Exception as e:
         print(
             f"[Error {process_index}] Failed to compile custom CUDA kernel: Record as compilation failure. \nError: {e}"
@@ -461,7 +469,6 @@ def eval_kernel_against_ref(
             custom_model_src=custom_model_src,
         )
     except Exception as e:
-        # metadata["error"] = True
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
         graceful_eval_cleanup(process_index, context, device)
         # metadata["runtime_error"] = e
@@ -470,7 +477,7 @@ def eval_kernel_against_ref(
             compiled=True, correctness=False, metadata=metadata
         )
         return kernel_exec_result
-    if "error" in metadata and metadata["error"] == True: # if error in run_and_check_correctness
+    if "early_exit" in metadata and metadata["early_exit"] == True: # if error in run_and_check_correctness
         graceful_eval_cleanup(process_index, context, device)
         return kernel_exec_result
     # Measure Performance [Optional] | conditioned on compilation + correctness + no exception so far
@@ -539,16 +546,20 @@ def register_and_format_exception(
     max_length characters
 
     NOTE: I can't get torch truncate to work during exception handling so I have this for now
-    """
+    """    
+    # Possible error types: syntax_error, compilation_error, runtime_error, lock_file_error (?), correctness_issue, error_during_performance, timeout
+    if exception_type == "syntax_error" and type(exception_msg) == SyntaxError:
+        exception_str = f"{exception_msg.msg} \n Line: {exception_msg.lineno}, Column: {exception_msg.offset}\n Code: {exception_msg.text.strip()}\n"
+
     # Truncate exception message if too long
-    exception_str = str(exception_msg)
     if truncate and len(exception_str) > max_length:
         exception_str = exception_str[: max_length - 3] + "..."
 
     if verbose:
         print(f"[Exception {exception_type}] {exception_str} ")
-    metadata[exception_type] = exception_str
-
+    # metadata[exception_type] = exception_str
+    metadata["error_msg"] = exception_str
+    metadata["error_type"] = exception_type
     return metadata
 
 
@@ -690,6 +701,11 @@ def run_and_check_correctness(
                     metadata.setdefault("max_difference", []).append(f"{max_diff:.6f}")
                     metadata.setdefault("avg_difference", []).append(f"{avg_diff:.6f}")
                     metadata["correctness_issue"] = "Output mismatch"
+                    metadata = register_and_format_exception(
+                        "correctness_issue",
+                        f"Output value mismatch: Max difference {max_diff:.6f}, Avg difference {avg_diff:.6f}",
+                        metadata,
+                    )
                     if verbose:
                         print(f"[FAIL {process_index}] trial {trial}: Output mismatch")
                 else:  # pass
@@ -700,7 +716,7 @@ def run_and_check_correctness(
             except Exception as e:
                 print(f"[Error {process_index}] Exception happens during correctness check")
                 print(f"Error in launching kernel for ModelNew: {e}")
-                if "CUDA error" in str(e):
+                if verbose and "CUDA error" in str(e):
                     print("CUDA ERROR DETECTED")
                     print(f"Original Model Source: \n{original_model_src}")
                     print(f"Custom Model Source: \n{custom_model_src}")
@@ -708,7 +724,7 @@ def run_and_check_correctness(
                 metadata = register_and_format_exception(
                     "runtime_error", e, metadata, truncate=True
                 )
-                metadata["error"] = True
+                metadata["early_exit"] = True
                 return KernelExecResult(
                     compiled=True, correctness=False, metadata=metadata
                 )
