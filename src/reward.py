@@ -110,10 +110,33 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
             result = subprocess.run(
                 [sys.executable, "src/eval_script.py", ref_path, custom_path, str(process_index), eval_cache_path],
                 timeout=120,
-                stdout=None,  # Let all output pass through
-                stderr=None,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True
             )
+            
+            process_out = result.stdout
+            process_err = result.stderr
+
+            # Parse CUDA compilation errors
+            cuda_compilation_error_messages = []
+            lines = process_out.split('\n')
+            i = 0
+            while i < len(lines):
+                if "error: " in lines[i]:
+                    error_start = lines[i].find("error: ") + len("error: ")
+                    error_message = lines[i][error_start:]
+                    
+                    # Keep adding lines until we find one containing "/home"
+                    j = i + 1
+                    while j < len(lines) and "/home/ubuntu" not in lines[j]:
+                        error_message += " " + lines[j]
+                        j += 1
+                    
+                    cuda_compilation_error_messages.append(error_message.strip())
+                    i = j
+                else:
+                    i += 1
 
             if result.returncode != 0:
                 print(f"[Reward {process_index}] Evaluation failed with return code {result.returncode}")
@@ -122,6 +145,7 @@ def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_
                 with open(eval_cache_path, 'r') as f:
                     output = json.load(f)
                 os.unlink(eval_cache_path)  # Clean up the temp file
+                output["metadata"]["cuda_compilation_error_messages"] = cuda_compilation_error_messages
 
                 eval_result = KernelExecResult(
                     compiled=output["compiled"],
