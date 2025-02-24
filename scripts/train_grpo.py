@@ -4,7 +4,7 @@ import torch
 import pydra
 from pydra import REQUIRED, Config
 from transformers import AutoModelForCausalLM
-from datasets import load_dataset, Dataset
+from datasets import load_dataset, Dataset, IterableDataset
 from trl import GRPOConfig, GRPOTrainer
 from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
@@ -12,29 +12,31 @@ from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PR
 from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
 from src.reward import reward_fn, compute_format_reward
 from peft import LoraConfig, get_peft_model
+from src.dynamic_data_loader import create_dynamic_loader
 
 class TrainingConfig(Config):
     def __init__(self):
         self.seed = 11
         self.verbose = True
         # Model configuration
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
+        self.model_name = 'runs/merged_model' # "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
         self.learning_rate = 1e-5
-        self.max_tokens = 4096
+        self.max_tokens = 16384
 
         # GRPO configuration
         self.num_generations = 7 # Number of generations per prompt
-        self.beta = 0.001  # KL coefficient
+        self.beta = 0  # KL coefficient
         self.temperature = 0.7
-        
+
         # Training configuration
         self.num_epochs = 10
-        self.batch_size = 1
+        self.batch_size = 1 * self.num_generations # now batches are split by main process
         self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = False
+        self.gradient_checkpointing = True
         self.use_vllm = True
-        self.vllm_gpu_memory_utilization = 0.7
+        self.vllm_gpu_memory_utilization = 0.5
         self.optim = "adamw_torch"
+        self.max_steps = (self.num_epochs * 1000) // self.num_generations #TODO; fix, for lr scheduler
 
         # Evaluation configuration
         self.do_eval = False
@@ -47,7 +49,8 @@ class TrainingConfig(Config):
         self.dataset_name = "ScalingIntelligence/KernelBench"
         self.dataset_dir = "data"
         self.dataset_path = f"{self.dataset_dir}/kernelbench_level_{self.level}.json"
-        
+        self.split_batches = True
+
         # Hardware configuration
         self.gpu_arch = ["Hopper"]  # GPU architecture for kernel compilation
         self.gpu_name = "H100"
@@ -56,7 +59,7 @@ class TrainingConfig(Config):
         self.output_dir = "runs/grpo_training"
         self.response_output_dir = "outputs"
 
-        self.full_finetune = False # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
+        self.full_finetune = True # LoRA is broken for now, it's probably because of https://github.com/vllm-project/vllm/issues/12961 
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
@@ -70,7 +73,7 @@ class TrainingConfig(Config):
 def main(config: TrainingConfig):
     # Set up GPU architecture for kernel compilation
     set_gpu_arch(config.gpu_arch)
-    
+    tokenizer = get_tokenizer(config.model_name)    
     # Create output directory
     os.makedirs(config.output_dir, exist_ok=True)
     os.makedirs(config.dataset_dir, exist_ok=True)
@@ -119,33 +122,26 @@ def main(config: TrainingConfig):
     for ref_arch_src in data["ref_arch_src"]:
         prompt = custom_prompt_generate_custom_cuda(ref_arch_src)#, gpu_name=config.gpu_name)
         # train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
+
         train_prompts.append([{"role": "user", "content": prompt}])
-    dataset = Dataset.from_dict({
-        "prompt": train_prompts,
-        "ref_arch_src": data["ref_arch_src"],
-        "baseline_runtime": data["baseline_runtime"],
-        "level": data["level"],
-        "task_id": data["task_id"],
-    })
 
-    print(f"Dataset size: {len(dataset)}")
+    def generator():
+        for i in range(len(train_prompts)):
+            yield {
+                "prompt": train_prompts[i],
+                "ref_arch_src": data["ref_arch_src"][i],
+                "level": data["level"][i],
+                "task_id": data["task_id"][i],
+            }
 
-    # Split into train and eval
-    split_dataset = dataset.train_test_split(test_size=0.01, seed=config.seed, shuffle=False)
-    train_dataset = split_dataset["train"]
-    eval_dataset = split_dataset["test"]
-    print(f"Train dataset size: {len(train_dataset)}")
-    print(f"Eval dataset size: {len(eval_dataset)}")
-    if config.verbose:
-        print("Evaluation dataset indices:")
-        print(eval_dataset["task_id"])
+    dataset = IterableDataset.from_generator(generator)
+    # dataset = create_dynamic_loader("dataset", train_prompts, data["ref_arch_src"], data["level"], data["task_id"])
 
     model_kwargs = dict(
         attn_implementation="flash_attention_2",
         torch_dtype="bfloat16",
         use_cache=False if config.gradient_checkpointing else True,
     )
-    tokenizer = get_tokenizer(config.model_name)
 
     # Create GRPO config
     training_args = GRPOConfig(
@@ -174,6 +170,8 @@ def main(config: TrainingConfig):
         eval_strategy=config.eval_strategy,
         eval_steps=config.eval_steps,
         seed=config.seed,
+        split_batches = config.split_batches,
+        max_steps=config.max_steps
     )
 
     peft_config = None
@@ -191,24 +189,25 @@ def main(config: TrainingConfig):
             lora_alpha=config.lora_alpha,
             target_modules=config.lora_target_modules,
             lora_dropout=config.lora_dropout,
-            bias="none"
+            bias="none",
+            task_type="CAUSAL_LM"
         )
+
         model.enable_input_require_grads()
         model = get_peft_model(model, peft_config)
         # print("Compiling model")
         # model = torch.compile(model)
 
     # Create reward function that takes in trainer
-    def compute_reward(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, **kwargs):
-        return reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, 
+    def compute_reward(prompts, completions, ref_arch_src, level, task_id, **kwargs):
+        return reward_fn(prompts, completions, ref_arch_src, level, task_id, 
                          trainer, output_dir=config.response_output_dir, **kwargs)
 
     trainer = GRPOTrainer(
         model=model,
         reward_funcs=[compute_reward, compute_format_reward],
         args=training_args,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
+        train_dataset=dataset,
         processing_class=tokenizer,
         peft_config=peft_config
     )
@@ -216,10 +215,10 @@ def main(config: TrainingConfig):
     # Train model
     print("Starting training...")
     trainer.train()
-    
+
     if trainer.accelerator.is_main_process:
         print("Saving model...")
         trainer.model.config.save_pretrained(training_args.output_dir)
 
 if __name__ == "__main__":
-    main() 
+    main()

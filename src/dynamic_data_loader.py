@@ -1,75 +1,66 @@
-from torch.utils.data import IterableDataset
 import os
 import json
 import random
+import torch
+from datasets import IterableDataset, Dataset
 
-class DynamicLoader(IterableDataset):
-    def __init__(self, path, train_prompts, ref_arch_srcs, baseline_runtimes, levels, task_ids, remove_on_consumption=True, shuffle=True):
-        self.path = path
-        self.remove_on_consumption = remove_on_consumption
-        self.file_counter = 0
-        self.shuffle = shuffle
-        os.makedirs(path, exist_ok=True)
-        self.load_initial_training_data(train_prompts, ref_arch_srcs, baseline_runtimes, levels, task_ids)
+def create_dynamic_loader(path, train_prompts, ref_arch_srcs, levels, task_ids, remove_on_consumption=True, shuffle=True):
+    os.makedirs(path, exist_ok=True)
+    file_counter = 0
+    is_original = set()
+    for prompt, ref_src, level, task_id in zip(train_prompts, ref_arch_srcs, levels, task_ids):
+        with open(os.path.join(path, f"{file_counter}.json"), "w") as f:
+            json.dump({"prompt": prompt, "ref_arch_src": ref_src, "level": level, "task_id": task_id}, f)
+        is_original.add(file_counter)
+        file_counter += 1
 
-    def add_datapoint(self, train_prompt, ref_arch_src, baseline_runtime, level, task_id):
-        file_id = self.file_counter
-        self.file_counter += 1
+    def add_datapoint(train_prompt, ref_arch_src, level, task_id, original=False):
+        nonlocal file_counter
+        with open(os.path.join(path, f"{file_counter}.json"), "w") as f:
+            json.dump({"prompt": train_prompt, "ref_arch_src": ref_arch_src, "level": level, "task_id": task_id}, f)
+        if original:
+            is_original.add(file_counter)
+        file_counter += 1
 
-        data = {
-            "prompt": train_prompt,
-            "ref_arch_src": ref_arch_src,
-            "baseline_runtime": baseline_runtime,
-            "level" : level,
-            "task_id": task_id
-        }
-
-        file_name = f"{file_id}.json"
-        file_path = os.path.join(self.path, file_name)
-        with open(file_path, "w") as f:
-            json.dump(data, f)
-
-    def load_initial_training_data(self, train_prompts, ref_arch_srcs, baseline_runtimes, levels, task_ids):
-        for train_prompt, ref_arch_src, baseline_runtime, level, task_id in zip(train_prompts, ref_arch_srcs, baseline_runtimes, levels, task_ids):
-            self.add_datapoint(train_prompt, ref_arch_src, baseline_runtime, level, task_id)
-
-    def __iter__(self):
+    def generator():
         while True:
-            files = [f for f in os.listdir(self.path) if f.endswith('.json') and os.path.isfile(os.path.join(self.path, f))]
-            if len(files) == 0:
+            files = [f for f in os.listdir(path) if f.endswith('.json') and os.path.isfile(os.path.join(path, f))]
+            if not files:
                 return
-            else:
-                file = random.choice(files) if self.shuffle else min(files, key = lambda string : int(string.remove_suffix('.json')))
-                filename = os.path.join(self.path, file)
-                with open(filename, 'r') as f:
-                    data = json.load(f)
+            file = random.choice(files) if shuffle else min(files, key=lambda x: int(x.removesuffix('.json')))
+            filename = os.path.join(path, file)
+            with open(filename, 'r') as f:
+                data = json.load(f)
+            file_id = int(file.removesuffix('.json'))
+            if remove_on_consumption and file_id not in is_original:
+                os.remove(filename)
 
-                if self.remove_on_consumption:
-                    os.remove(filename)
+            yield data
 
-                yield {
-                    "prompt": data["prompt"],
-                    "ref_arch_src": data["ref_arch_src"],
-                    "baseline_runtime": data["baseline_runtime"],
-                    "task_id": data["task_id"],
-                    "level" : data["level"]
-                }
-
-    def __len__(self):
-        return len([f for f in os.listdir(self.path) if f.endswith('.json') and os.path.isfile(os.path.join(self.path, f))])
+    dataset = IterableDataset.from_generator(generator)
+    dataset.add_datapoint = add_datapoint   
+    return dataset
 
 def test():
     train_prompts = ["prompt_1", "prompt_2", "prompt_3"]
     ref_arch_srcs = ["source_1", "source_2", "source_3"]
-    baseline_runtimes = [10, 20, 30]
-    levels = [1,1,1]
-    task_ids = [0,1,2]
-
+    levels = [1, 1, 1]
+    task_ids = [0, 1, 2]
     test_path = "test_data"
 
-    loader = DynamicLoader(test_path, train_prompts, ref_arch_srcs, baseline_runtimes, levels, task_ids)
-    for element in loader:
-        if random.random() < .5:
-            loader.add_datapoint("prompt_x", "source_x", 10, 1, 3)
+    dataset = Dataset.from_dict({
+        "prompt": train_prompts,
+        "ref_arch_src": ref_arch_srcs,
+        "level": levels,
+        "task_id": task_ids,
+    })
+
+    for element in dataset:
+        print(f"consumed {element}")
+        if random.random() < 0.5:
+            dataset.add_datapoint("prompt_x", "source_x", 1, 3)
+            print("added a new one")
+        input()
+
 if __name__ == '__main__':
     test()
