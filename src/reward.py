@@ -12,18 +12,25 @@ def calculate_kernel_reward(
     # baseline_runtime: float
 ) -> float:
     if eval_result is None:
-        return 0.0
-    compilation_reward = float(eval_result.compiled)
-    correctness_reward = float(eval_result.correctness) * 3
+        return (0.0, 0.0, 0.0, 0.0)
+    COMPILED_COEFF = 0.5
+    RUN_COEFF = 0.5
+    CORRECTNESS_COEFF = 1
+    SPEEDUP_COEFF = 1
+
+    compilation_reward = float(eval_result.compiled) * COMPILED_COEFF
+    run_reward = float(eval_result.run) * RUN_COEFF
+    correctness_reward = float(eval_result.correctness) * CORRECTNESS_COEFF
+    
     if eval_result.correctness and eval_result.runtime > 0:
         speedup = eval_result.runtime_original / eval_result.runtime
-        performance_reward = speedup * 4
+        performance_reward = speedup * SPEEDUP_COEFF
     else:
         performance_reward = 0.0
   
     # total_reward = compilation_reward +correctness_reward + performance_reward
     
-    return (compilation_reward, correctness_reward, performance_reward)
+    return (compilation_reward, run_reward, correctness_reward, performance_reward)
 
 # def compute_format_reward(completions, **kwargs):
 #     pattern = r"^<think>.*?</think>\s*```python\s*.*?```\s*$"
@@ -46,6 +53,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
     os.makedirs(eval_cache_dir, exist_ok=True)
 
     for prompt, completion, ref_arch, ind_level, id in zip(prompts, completions, ref_arch_src, level, task_id):
+        # print(f"[Reward {process_index}] Processing task {id}")
         reward = 0.0
         content = completion[0]["content"]
         if verbose: 
@@ -65,7 +73,6 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
         #     print(f"[Reward {process_index}] had no format match")
         # format_reward = 0.5 if format_match else 0.0 # Just for saving to output; Won't be added to reward
 
-        #custom_cuda = extract_first_code(match.group(1), ["python", "cpp"])
         custom_cuda = match.group(1).strip() 
         for code_type in ["python", "cpp", "cuda"]:
             if custom_cuda.startswith(code_type):
@@ -81,7 +88,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
             rewards.append(reward)
             continue
 
-        reward += 0.5
+        # reward += 0.5 
 
         # Save response before evaluation
         # pre_eval_dir = f"{output_dir}/level_{ind_level}/step_{current_step}/pre_eval"
@@ -143,6 +150,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
 
                 eval_result = KernelExecResult(
                     compiled=output["compiled"],
+                    run=output["run"],
                     correctness=output["correctness"],
                     metadata=output["metadata"],
                     runtime=output["runtime"],
@@ -165,14 +173,14 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
 
         # print(f"[Reward {process_index}] FINISHED EVAL")
         # print(f"[Reward {process_index}] EVAL RESULT: {eval_result}")
-        print(eval_result)
+        print(f"[Task {id}]: {eval_result}")
 
-        compilation_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
+        compilation_reward, run_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
             eval_result=eval_result
         )
 
         # Compute total reward
-        reward += compilation_reward + correctness_reward + performance_reward
+        reward += compilation_reward + run_reward + correctness_reward + performance_reward
         rewards.append(reward)
         # print(reward)
         # input()
@@ -205,6 +213,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
             "runtime": eval_result.runtime,
             # "format_reward": format_reward,
             "compilation_reward": compilation_reward,
+            "run_reward": run_reward,
             "correctness_reward": correctness_reward,
             "performance_reward": performance_reward,
             "reward": reward,

@@ -19,6 +19,7 @@ def result_to_json_dict(result: KernelExecResult) -> dict:
 
     return {
         'compiled': result.compiled,
+        'run': result.run,
         'correctness': result.correctness,
         'metadata': make_serializable(result.metadata),
         'runtime': float(result.runtime),

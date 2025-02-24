@@ -83,6 +83,7 @@ class KernelExecResult(BaseModel):
     """
 
     compiled: bool = False
+    run: bool = False
     correctness: bool = False
     metadata: dict = {}
     runtime: float = -1.0  # in us, only recorded if we decide to measure performance
@@ -367,7 +368,7 @@ def eval_kernel_against_ref(
         original_model_src, context, metadata, process_index
     )
     if Model is None:
-        return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
+        return KernelExecResult(compiled=False, run=False, correctness=False, metadata=metadata)
     
     set_seed(seed_num)  # set seed for reproducible input
     init_inputs = get_init_inputs()
@@ -385,7 +386,7 @@ def eval_kernel_against_ref(
                 "Original model does not have a forward method", 
                 metadata
             )
-            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
+            return KernelExecResult(compiled=False, run=False, correctness=False, metadata=metadata)
         if verbose:
             print(f"[Eval {process_index}] Original Model Loaded")
     if verbose:
@@ -400,7 +401,7 @@ def eval_kernel_against_ref(
         if ModelNew is None:
             # raise RuntimeError("ModelNew is None")
             graceful_eval_cleanup(process_index, context, device)
-            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
+            return KernelExecResult(compiled=False, run=False, correctness=False, metadata=metadata)
     except Exception as e:
         print(
             f"[Error {process_index}] Failed to compile custom CUDA kernel: Record as compilation failure. \nError: {e}"
@@ -415,13 +416,13 @@ def eval_kernel_against_ref(
             )
             metadata = register_and_format_exception("lock_file_error", e, metadata)
             graceful_eval_cleanup(process_index, context, device)
-            return None
+            return KernelExecResult(compiled=False, run=False, correctness=False, metadata=metadata)
         else:
             # metadata["compilation_error"] = e
             metadata = register_and_format_exception("compilation_error", e, metadata)
             graceful_eval_cleanup(process_index, context, device)
             return KernelExecResult(
-                compiled=False, metadata=metadata
+                compiled=False, run=False, correctness=False, metadata=metadata
             )  # skip further steps
 
     # at this point we passed compilation
@@ -442,9 +443,9 @@ def eval_kernel_against_ref(
         # metadata["runtime_error"] = e
         metadata = register_and_format_exception("runtime_error", e, metadata)
         return KernelExecResult(
-            compiled=True, correctness=False, metadata=metadata
+            compiled=True, run=False, correctness=False, metadata=metadata
         )  # skip further steps
-
+    
     kernel_exec_result = None
 
     # Check Correctness
@@ -470,7 +471,7 @@ def eval_kernel_against_ref(
         # metadata["runtime_error"] = e
         metadata = register_and_format_exception("runtime_error", e, metadata)
         kernel_exec_result = KernelExecResult(
-            compiled=True, correctness=False, metadata=metadata
+            compiled=True, run=False, correctness=False, metadata=metadata
         )
         return kernel_exec_result
     if "early_exit" in metadata and metadata["early_exit"] == True: # if error in run_and_check_correctness
@@ -686,7 +687,7 @@ def run_and_check_correctness(
                             f"[FAIL {process_index}] trial {trial}: Output shape mismatch: Expected {output.shape}, got {output_new.shape}"
                         )
                     return KernelExecResult(
-                        compiled=True, correctness=False, metadata=metadata
+                        compiled=True, run=True, correctness=False, metadata=metadata
                     )
 
                 # check output value difference
@@ -723,7 +724,7 @@ def run_and_check_correctness(
                 )
                 metadata["early_exit"] = True
                 return KernelExecResult(
-                    compiled=True, correctness=False, metadata=metadata
+                    compiled=True, run=False, correctness=False, metadata=metadata
                 )
                 # break
 
@@ -736,9 +737,9 @@ def run_and_check_correctness(
     metadata["correctness_trials"] = f"({pass_count} / {num_correct_trials})"
 
     if pass_count == num_correct_trials:
-        return KernelExecResult(compiled=True, correctness=True, metadata=metadata)
+        return KernelExecResult(compiled=True, run=True, correctness=True, metadata=metadata)
     else:
-        return KernelExecResult(compiled=True, correctness=False, metadata=metadata)
+        return KernelExecResult(compiled=True, run=True, correctness=False, metadata=metadata)
 
 
 def check_metadata_serializable(metadata: dict):

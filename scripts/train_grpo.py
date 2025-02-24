@@ -10,7 +10,7 @@ from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
 from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
-from src.reward import reward_fn, compute_format_reward
+from src.reward import reward_fn
 from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
@@ -24,18 +24,18 @@ class TrainingConfig(Config):
         self.max_tokens = 16384
 
         # GRPO configuration
-        self.num_generations = 7 # Number of generations per prompt
+        self.num_generations = 28 # Number of generations per prompt
         self.beta = 0  # KL coefficient
-        self.temperature = 0.7
+        self.temperature = 0.9
         
         # Training configuration
         self.num_epochs = 10
-        self.batch_size = 1
+        self.batch_size = 4
         self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = True
         self.use_vllm = True
         self.vllm_gpu_memory_utilization = 0.5
-        self.optim = "adamw_torch"
+        self.optim = "paged_adamw_8bit"
 
         # Evaluation configuration
         self.do_eval = False
@@ -122,7 +122,8 @@ def main(config: TrainingConfig):
         # train_prompts.append([{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}])
         train_prompts.append([{"role": "user", "content": prompt}])
 
-    selected_indices = [15, 30, 45, 12, 14, 21, 26, 32, 38, 10, 19, 29]
+    # selected_indices = [15, 30, 45, 12, 14, 21, 26, 32, 38, 10, 19, 29]
+    selected_indices = [10] # 3d tensor-matrix multiplication
     selected_indices = [i - 1 for i in selected_indices]
     dataset = Dataset.from_dict({
         "prompt": [train_prompts[i] for i in selected_indices],
@@ -164,6 +165,7 @@ def main(config: TrainingConfig):
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         gradient_checkpointing=config.gradient_checkpointing,
+        max_grad_norm=1.0,
         max_prompt_length=None,
         max_completion_length=config.max_tokens,
         num_generations=config.num_generations,
@@ -215,12 +217,13 @@ def main(config: TrainingConfig):
 
     trainer = GRPOTrainer(
         model=model,
-        reward_funcs=[compute_reward, compute_format_reward],
+        # reward_funcs=[compute_reward, compute_format_reward],
+        reward_funcs=[compute_reward],
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
-        peft_config=peft_config
+        peft_config=peft_config,
     )
 
     # Train model
