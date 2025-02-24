@@ -10,7 +10,7 @@ from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
 from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
-from src.reward import reward_fn, compute_format_reward
+from src.reward import reward_fn
 from peft import LoraConfig, get_peft_model
 
 class TrainingConfig(Config):
