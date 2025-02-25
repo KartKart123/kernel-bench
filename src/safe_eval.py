@@ -185,19 +185,44 @@ def _cleanup_cuda_extensions():
 
 
 def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.device):
+    # try:
+    #     """
+    #     Clean up env, gpu cache, and compiled CUDA extensions after evaluation
+    #     """  # delete ran-specific function definitions before next eval run
+    #     del curr_context
+    #     # # Clear CUDA cache and reset GPU state
+    #     with torch.cuda.device(device):
+    #         torch.cuda.synchronize(device=device)
+    #         torch.cuda.empty_cache()
+    #         torch.cuda.reset_peak_memory_stats(device=device)
+    #         torch.cuda.synchronize(device=device)
+    #     # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
     try:
-        """
-        Clean up env, gpu cache, and compiled CUDA extensions after evaluation
-        """  # delete ran-specific function definitions before next eval run
         del curr_context
-        # # Clear CUDA cache and reset GPU state
+    except Exception as e:
+        print(f"[graceful_eval_cleanup {process_index}] error at del curr_context {e}")
+    try:
+        with torch.cuda.device(device):
+            torch.cuda.synchronize(device=device)
+    except Exception as e:
+        print(f"[graceful_eval_cleanup {process_index}] at first torch synchronize {e}")
+    try:
         with torch.cuda.device(device):
             torch.cuda.empty_cache()
-            torch.cuda.reset_peak_memory_stats(device=device)
-            torch.cuda.synchronize(device=device)
-        # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
     except Exception as e:
-        print(e, "graceful_eval_cleanup encountered an error")
+        print(f"[graceful_eval_cleanup {process_index}] at torch.cuda.empty_cache {e}")
+    try:
+        with torch.cuda.device(device):
+            torch.cuda.reset_peak_memory_stats(device=device)
+    except Exception as e:
+        print(f"[graceful_eval_cleanup {process_index}] at torch.cuda.reset_peak_memory_stats {e}")
+    try:
+        with torch.cuda.device(device):
+            torch.cuda.synchronize(device=device)
+    except Exception as e:
+        print(f"[graceful_eval_cleanup {process_index}] at second torch synchronize {e}")
+    # except Exception as e:
+    #     print(f"{graceful_eval_cleanup} encountered an error {e}")
 
 def build_compile_cache_legacy(
     custom_model_src: str,
@@ -503,24 +528,24 @@ def eval_kernel_against_ref(
                 )
                 runtime_stats = get_timing_stats(elapsed_times, device=device)
 
-                torch.cuda.synchronize(device=device)
-                model_old = original_model.cuda(device=device)
-                torch.cuda.synchronize(device=device)
-                elapsed_times_original = time_execution_with_cuda_event(
-                    model_old,
-                    *inputs,
-                    num_trials=num_perf_trials,
-                    verbose=verbose,
-                    device=device,
-                )
-                runtime_stats_original = get_timing_stats(elapsed_times_original, device=device)
+                # torch.cuda.synchronize(device=device)
+                # model_old = original_model.cuda(device=device)
+                # torch.cuda.synchronize(device=device)
+                # elapsed_times_original = time_execution_with_cuda_event(
+                #     model_old,
+                #     *inputs,
+                #     num_trials=num_perf_trials,
+                #     verbose=verbose,
+                #     device=device,
+                # )
+                # runtime_stats_original = get_timing_stats(elapsed_times_original, device=device)
 
                 if verbose:
                     print(f"[Eval {process_index}] Performance Stats: {runtime_stats}")
                 kernel_exec_result.runtime = runtime_stats["mean"]
                 kernel_exec_result.runtime_stats = runtime_stats
-                kernel_exec_result.runtime_original = runtime_stats_original["mean"]
-                kernel_exec_result.runtime_stats_original = runtime_stats_original
+                # kernel_exec_result.runtime_original = runtime_stats_original["mean"]
+                # kernel_exec_result.runtime_stats_original = runtime_stats_original
         except Exception as e:
             if verbose:
                 print(f"[Eval {process_index}] Error in Measuring Performance: {e}")
@@ -714,10 +739,10 @@ def run_and_check_correctness(
             except Exception as e:
                 print(f"[Error {process_index}] Exception happens during correctness check")
                 print(f"Error in launching kernel for ModelNew: {e}")
-                if verbose and "CUDA error" in str(e):
-                    print("CUDA ERROR DETECTED")
-                    print(f"Original Model Source: \n{original_model_src}")
-                    print(f"Custom Model Source: \n{custom_model_src}")
+                # if verbose and "CUDA error" in str(e):
+                #     print("CUDA ERROR DETECTED")
+                #     print(f"Original Model Source: \n{original_model_src}")
+                #     print(f"Custom Model Source: \n{custom_model_src}")
 
                 metadata = register_and_format_exception(
                     "runtime_error", e, metadata, truncate=True

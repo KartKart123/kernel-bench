@@ -6,10 +6,11 @@ from src.safe_eval import KernelExecResult
 import subprocess
 import sys
 import tempfile
+import shutil
 
 def calculate_kernel_reward(
     eval_result: KernelExecResult,
-    # baseline_runtime: float
+    baseline_runtime: float
 ) -> float:
     if eval_result is None:
         return (0.0, 0.0, 0.0, 0.0)
@@ -23,7 +24,7 @@ def calculate_kernel_reward(
     correctness_reward = float(eval_result.correctness) * CORRECTNESS_COEFF
     
     if eval_result.correctness and eval_result.runtime > 0:
-        speedup = eval_result.runtime_original / eval_result.runtime
+        speedup = baseline_runtime / eval_result.runtime
         performance_reward = speedup * SPEEDUP_COEFF
     else:
         performance_reward = 0.0
@@ -38,7 +39,8 @@ def calculate_kernel_reward(
 #     matches = [re.match(pattern, content, re.DOTALL) for content in completion_contents]
 #     return [0.5 if match else 0.0 for match in matches]
 
-def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, output_dir="outputs", **kwargs):
+def reward_fn(prompts, completions, ref_arch_src, baseline_runtime, level, task_id, trainer, output_dir="outputs", **kwargs):
+    # torch_ext_dir = "/home/ubuntu/.cache/torch_extensions/py312_cu124"
     process_index = trainer.accelerator.process_index
     rewards = []
     current_step = trainer.state.global_step
@@ -52,7 +54,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
     eval_cache_path = f"{eval_cache_dir}/eval_results_{process_index}.json"
     os.makedirs(eval_cache_dir, exist_ok=True)
 
-    for prompt, completion, ref_arch, ind_level, id in zip(prompts, completions, ref_arch_src, level, task_id):
+    for prompt, completion, ref_arch, runtime, ind_level, id in zip(prompts, completions, ref_arch_src, baseline_runtime, level, task_id):
         # print(f"[Reward {process_index}] Processing task {id}")
         reward = 0.0
         content = completion[0]["content"]
@@ -155,8 +157,8 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
                     metadata=output["metadata"],
                     runtime=output["runtime"],
                     runtime_stats=output["runtime_stats"],
-                    runtime_original=output["runtime_original"],
-                    runtime_stats_original=output["runtime_stats_original"]
+                    # runtime_original=output["runtime_original"],
+                    # runtime_stats_original=output["runtime_stats_original"]
                 )
                 
         except subprocess.TimeoutExpired:
@@ -176,7 +178,8 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
         print(f"[Task {id}]: {eval_result}")
 
         compilation_reward, run_reward, correctness_reward, performance_reward = calculate_kernel_reward( # Correctness and performance reward
-            eval_result=eval_result
+            eval_result=eval_result,
+            baseline_runtime=runtime
         )
 
         # Compute total reward
@@ -207,10 +210,12 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
             "step": current_step,
             "device": device.index,
             "compiled": eval_result.compiled,
+            "run": eval_result.run,
             "correctness": eval_result.correctness,
             "error_type": eval_result.metadata["error_type"] if "error_type" in eval_result.metadata else None,
             "error_msg": eval_result.metadata["error_msg"] if "error_msg" in eval_result.metadata else None,
             "runtime": eval_result.runtime,
+            "baseline_runtime": runtime,
             # "format_reward": format_reward,
             "compilation_reward": compilation_reward,
             "run_reward": run_reward,

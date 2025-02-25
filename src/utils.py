@@ -79,9 +79,10 @@ def measure_program_time(
             model = Model(*init_inputs)
             
             if use_torch_compile:
-                print(f"Using torch.compile to compile model {ref_arch_name} with {torch_compile_backend} backend and {torch_compile_options} mode")
+                if verbose:
+                    print(f"Using torch.compile to compile model {ref_arch_name} with {torch_compile_backend} backend and {torch_compile_options} mode")
                 model = torch.compile(model, backend=torch_compile_backend, mode=torch_compile_options)
-            else:
+            elif verbose:
                 print(f"Using PyTorch Eager Execution on {ref_arch_name}")
             
             model = model.cuda(device=device)
@@ -91,8 +92,7 @@ def measure_program_time(
             )
             runtime_stats = get_timing_stats(elapsed_times, device=device)
 
-            if verbose:
-                print(f"{ref_arch_name} {runtime_stats}")
+            print(f"{ref_arch_name} {runtime_stats}")
             
             return runtime_stats
     except Exception as e:

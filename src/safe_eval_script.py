@@ -1,6 +1,8 @@
 from src.safe_eval import eval_kernel_against_ref, KernelExecResult
 import sys
 import json
+import os
+import shutil
 
 def result_to_json_dict(result: KernelExecResult) -> dict:
     """
@@ -24,8 +26,8 @@ def result_to_json_dict(result: KernelExecResult) -> dict:
         'metadata': make_serializable(result.metadata),
         'runtime': float(result.runtime),
         'runtime_stats': make_serializable(result.runtime_stats),
-        'runtime_original': float(result.runtime_original),
-        'runtime_stats_original': make_serializable(result.runtime_stats_original)
+        # 'runtime_original': float(result.runtime_original),
+        # 'runtime_stats_original': make_serializable(result.runtime_stats_original)
     }
 
 def main():
@@ -39,6 +41,13 @@ def main():
         ref_arch = f.read()
     with open(custom_path, 'r') as f:
         custom_cuda = f.read()
+
+    # Clear torch cache before compilation
+    torch_ext_dir = f"/home/ubuntu/.cache/torch_extensions/py312_cu124_{process_index}"
+    os.environ["TORCH_EXTENSIONS_DIR"] = torch_ext_dir # environment variable unique to each process
+    if os.path.exists(torch_ext_dir):
+        shutil.rmtree(torch_ext_dir)
+        # print(f"[Eval Subprocess {process_index}] Cleared Torch extension cache at {torch_ext_dir}")
 
     result = eval_kernel_against_ref(
         process_index=process_index,

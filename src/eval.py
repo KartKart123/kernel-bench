@@ -567,9 +567,10 @@ def time_execution_with_cuda_event(
         kernel_fn(*args)
         torch.cuda.synchronize(device=device)
 
-    print(
-        f"[Profiling] Using device: {device} {torch.cuda.get_device_name(device)}, warm up {num_warmup}, trials {num_trials}"
-    )
+    if verbose:
+        print(
+            f"[Profiling] Using device: {device} {torch.cuda.get_device_name(device)}, warm up {num_warmup}, trials {num_trials}"
+        )
     elapsed_times = []
 
     # Actual trials
