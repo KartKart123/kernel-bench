@@ -185,44 +185,45 @@ def _cleanup_cuda_extensions():
 
 
 def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.device):
+    try:
+        """
+        Clean up env, gpu cache, and compiled CUDA extensions after evaluation
+        """  # delete ran-specific function definitions before next eval run
+        del curr_context
+        # # Clear CUDA cache and reset GPU state
+        with torch.cuda.device(device):
+            torch.cuda.synchronize(device=device)
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats(device=device)
+            torch.cuda.synchronize(device=device)
+        # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
+    except Exception as e:
+        print(f"{graceful_eval_cleanup} encountered an error {e}")
+
     # try:
-    #     """
-    #     Clean up env, gpu cache, and compiled CUDA extensions after evaluation
-    #     """  # delete ran-specific function definitions before next eval run
     #     del curr_context
-    #     # # Clear CUDA cache and reset GPU state
+    # except Exception as e:
+    #     print(f"[GRACEFUL_EVAL_CLEANUP {process_index}] error at del curr_context {e}")
+    # try:
     #     with torch.cuda.device(device):
     #         torch.cuda.synchronize(device=device)
-    #         torch.cuda.empty_cache()
-    #         torch.cuda.reset_peak_memory_stats(device=device)
-    #         torch.cuda.synchronize(device=device)
-    #     # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
-    try:
-        del curr_context
-    except Exception as e:
-        print(f"[graceful_eval_cleanup {process_index}] error at del curr_context {e}")
-    try:
-        with torch.cuda.device(device):
-            torch.cuda.synchronize(device=device)
-    except Exception as e:
-        print(f"[graceful_eval_cleanup {process_index}] at first torch synchronize {e}")
-    try:
-        with torch.cuda.device(device):
-            torch.cuda.empty_cache()
-    except Exception as e:
-        print(f"[graceful_eval_cleanup {process_index}] at torch.cuda.empty_cache {e}")
-    try:
-        with torch.cuda.device(device):
-            torch.cuda.reset_peak_memory_stats(device=device)
-    except Exception as e:
-        print(f"[graceful_eval_cleanup {process_index}] at torch.cuda.reset_peak_memory_stats {e}")
-    try:
-        with torch.cuda.device(device):
-            torch.cuda.synchronize(device=device)
-    except Exception as e:
-        print(f"[graceful_eval_cleanup {process_index}] at second torch synchronize {e}")
     # except Exception as e:
-    #     print(f"{graceful_eval_cleanup} encountered an error {e}")
+    #     print(f"[GRACEFUL_EVAL_CLEANUP {process_index}] at first torch synchronize {e}")
+    # try:
+    #     with torch.cuda.device(device):
+    #         torch.cuda.empty_cache()
+    # except Exception as e:
+    #     print(f"[GRACEFUL_EVAL_CLEANUP {process_index}] at torch.cuda.empty_cache {e}")
+    # try:
+    #     with torch.cuda.device(device):
+    #         torch.cuda.reset_peak_memory_stats(device=device)
+    # except Exception as e:
+    #     print(f"[GRACEFUL_EVAL_CLEANUP {process_index}] at torch.cuda.reset_peak_memory_stats {e}")
+    # try:
+    #     with torch.cuda.device(device):
+    #         torch.cuda.synchronize(device=device)
+    # except Exception as e:
+    #     print(f"[GRACEFUL_EVAL_CLEANUP {process_index}] at second torch synchronize {e}")
 
 def build_compile_cache_legacy(
     custom_model_src: str,

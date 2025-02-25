@@ -38,8 +38,8 @@ def get_arch_definition(arch_src):
 # Custom CUDA Prompt
 ############################################
 
-CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels, optimizing for performance.
-Use torch.utils.cpp_extension.load_inline and name your optimized output architecture ModelNew (you can assume that the input will be on CUDA device).
+CUSTOM_PROBLEM_STATEMENT = """Replace pytorch operators in the given architecture with raw CUDA kernels.
+Use torch.utils.cpp_extension.load_inline and name your optimized output architecture ModelNew. The input and output have to be on CUDA device.
 Your answer should be real code (no pseudocode, no testing code, no other text), and make sure the code is correct.\n"""
 
 # CUSTOM_PROBLEM_INSTRUCTION = """
