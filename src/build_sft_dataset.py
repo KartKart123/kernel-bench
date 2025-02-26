@@ -44,12 +44,15 @@ def process_file(file_path: str, config: BuildConfig):
             
         content = gen['content']
         parse_pattern = r"^.*?</think>.*?```(.*?)```.*?$"
+        parse_think = r"^.*?<think>(.*?)</think>.*?$"
 
         match = re.match(parse_pattern, content, re.DOTALL)
-        if not match:
+        match_think = re.match(parse_think, content, re.DOTALL)
+        if not match or not match_think:
             continue
             
         cuda_code = match.group(1).strip()
+        think = match_think.group(1).strip()
         for code_type in ["python", "cpp"]:
             if cuda_code.startswith(code_type):
                 cuda_code = cuda_code[len(code_type):].strip()
@@ -58,7 +61,7 @@ def process_file(file_path: str, config: BuildConfig):
         example = {
             "messages": [
                 {"role": "user", "content": prompt},
-                {"role": "assistant", "content": f"```python\n{cuda_code}\n```"}
+                {"role": "assistant", "content": f"<think>{think}</think>\n<answer>```python\n{cuda_code}\n```</answer>"}
             ],
             "problem_name": problem_name,
             "runtime": result['runtime'],

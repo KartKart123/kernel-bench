@@ -4,8 +4,8 @@ import json
 from pydra import Config
 class InspectConfig(Config):
     def __init__(self):
-        self.path = "reasoning_traces/level_1/"
-        self.indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        self.path = "reasoning_traces/level_1/eval"
+        self.indices = [12]
 
 @pydra.main(base=InspectConfig)
 def main(config: InspectConfig):
@@ -28,6 +28,10 @@ def main(config: InspectConfig):
                 print("-" * 50)
                 print("\n\n")
                 print(f"Generation {i} of {problem_name}")
+                if "eval_result" in generation:
+                    print(generation["eval_result"])
+                else:
+                    print("No eval_result found")
                 input()
 
 if __name__ == "__main__":

@@ -19,25 +19,25 @@ class FTConfig(Config):
         self.max_length = 32768
         
         # Training settings
-        self.batch_size = 2
+        self.batch_size = 1
         self.gradient_accumulation_steps = 1
-        self.gradient_checkpointing = False
+        self.gradient_checkpointing = True
         self.learning_rate = 1e-5
-        self.num_epochs = 1
-        self.warmup_steps = 0
+        self.num_epochs = 2
+        self.warmup_steps = 10
         
         # Data settings
         self.train_file = "data/sft/kernelbench_sft_level_1.json"
         self.output_dir = "runs/sft"
         
         # Logging settings
-        self.logging_steps = 10
+        self.logging_steps = 1
         self.save_steps = 500
         
         # Checkpoint settings
         self.resume_from_checkpoint = None # "runs/sft/checkpoint-1000"
 
-        self.full_finetune = False
+        self.full_finetune = True
         # LoRA configuration
         self.lora_r = 8
         self.lora_alpha = self.lora_r
@@ -56,7 +56,7 @@ def main(config: SFTConfig):
         attn_implementation="flash_attention_2",
         torch_dtype="bfloat16",
         use_cache=False if config.gradient_checkpointing else True,
-        device_map="auto"
+        #device_map="auto"
     )
 
     tokenizer = get_tokenizer(config.model_name)
