@@ -10,7 +10,7 @@ from tqdm import tqdm
 from src.dataset import construct_kernelbench_dataset
 from src.prompt_constructor import custom_prompt_generate_custom_cuda, SYSTEM_PROMPT
 from src.utils import measure_program_time, set_gpu_arch, read_file, get_tokenizer
-from src.reward import reward_fn, compute_format_reward
+from src.reward import reward_fn
 from peft import LoraConfig, get_peft_model
 from src.dynamic_data_loader import create_dynamic_loader
 
@@ -19,7 +19,7 @@ class TrainingConfig(Config):
         self.seed = 11
         self.verbose = True
         # Model configuration
-        self.model_name = 'runs/merged_model' # "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B" 
         self.learning_rate = 1e-5
         self.max_tokens = 16384
 
@@ -135,7 +135,10 @@ def main(config: TrainingConfig):
             }
 
     dataset = IterableDataset.from_generator(generator)
-    # dataset = create_dynamic_loader("dataset", train_prompts, data["ref_arch_src"], data["level"], data["task_id"])
+
+
+    selected_indices = [15, 30, 45, 12, 14, 21, 26, 32, 38, 10, 19, 29]
+    dataset = create_dynamic_loader("dataset", train_prompts, data["ref_arch_src"], data["level"], data["task_id"], selected_indices)
 
     model_kwargs = dict(
         attn_implementation="flash_attention_2",
@@ -198,6 +201,7 @@ def main(config: TrainingConfig):
         # print("Compiling model")
         # model = torch.compile(model)
 
+    os.makedirs(config.response_output_dir, exist_ok=True)
     # Create reward function that takes in trainer
     def compute_reward(prompts, completions, ref_arch_src, level, task_id, **kwargs):
         return reward_fn(prompts, completions, ref_arch_src, level, task_id, 
@@ -221,4 +225,4 @@ def main(config: TrainingConfig):
         trainer.model.config.save_pretrained(training_args.output_dir)
 
 if __name__ == "__main__":
-    main()
+    main() 

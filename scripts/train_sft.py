@@ -1,25 +1,29 @@
+import os
 import pydra
 import torch
+import wandb
 from transformers import (
     AutoModelForCausalLM,
-    Trainer,
-    TrainingArguments,
+    TrainingArguments
 )
+from trl import SFTTrainer, SFTConfig, get_peft_config
 from peft import LoraConfig, get_peft_model
 from pydra import Config
-import wandb
 from datasets import load_dataset
-class SFTConfig(Config):
+from src.utils import get_tokenizer
+
+class FTConfig(Config):
     def __init__(self):
         # Model settings
-        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
-        self.max_length = 16384
+        self.model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
+        self.max_length = 32768
         
         # Training settings
-        self.batch_size = 4
+        self.batch_size = 2
         self.gradient_accumulation_steps = 1
+        self.gradient_checkpointing = False
         self.learning_rate = 1e-5
-        self.num_epochs = 3
+        self.num_epochs = 1
         self.warmup_steps = 0
         
         # Data settings
@@ -43,57 +47,57 @@ class SFTConfig(Config):
             "gate_proj", "down_proj", "up_proj"
         ]
 
-@pydra.main(base=SFTConfig)
+@pydra.main(base=FTConfig)
 def main(config: SFTConfig):
-    wandb.init(project="kernelbench-sft")
-
+    
     dataset = load_dataset("json", data_files=config.train_file)["train"]
-    input()
 
-    lora_config = LoraConfig(
-        r=config.lora_r,
-        lora_alpha=config.lora_alpha,
-        lora_dropout=config.lora_dropout,
-        lora_target_modules=config.lora_target_modules,
-        bias="none",
-        task_type="CAUSAL_LM"
-    )
-
-    model = AutoModelForCausalLM.from_pretrained(
-        config.model_name,
-        torch_dtype=torch.bfloat16,
+    model_kwargs = dict(
+        attn_implementation="flash_attention_2",
+        torch_dtype="bfloat16",
+        use_cache=False if config.gradient_checkpointing else True,
         device_map="auto"
     )
 
+    tokenizer = get_tokenizer(config.model_name)
+    tokenizer.pad_token = tokenizer.eos_token
+    peft_config = None
+
     if not config.full_finetune:
-        model = get_peft_model(model, lora_config)
-    
-    training_args = TrainingArguments(
+        peft_config = LoraConfig(
+            r=config.lora_r,
+            lora_alpha=config.lora_alpha,
+            lora_dropout=config.lora_dropout,
+            target_modules=config.lora_target_modules,
+            bias="none",
+            task_type="CAUSAL_LM"
+        )
+
+    training_args = SFTConfig(
         output_dir=config.output_dir,
         num_train_epochs=config.num_epochs,
         per_device_train_batch_size=config.batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
+        gradient_checkpointing=config.gradient_checkpointing,
+        model_init_kwargs=model_kwargs,
         learning_rate=config.learning_rate,
+        bf16=True,
         warmup_steps=config.warmup_steps,
         logging_steps=config.logging_steps,
         save_steps=config.save_steps,
-        logging_dir="logs",
-        report_to="wandb",
-        save_total_limit=3,
-        resume_from_checkpoint=config.resume_from_checkpoint
+        report_to=["wandb"],
+        save_total_limit=3
     )
-    
-    trainer = Trainer(
-        model=model,
+
+    trainer = SFTTrainer(
+        model=config.model_name,
         args=training_args,
-        train_dataset=dataset
+        train_dataset=dataset,
+        peft_config=peft_config,
+        processing_class=tokenizer
     )
     
     trainer.train(resume_from_checkpoint=config.resume_from_checkpoint)
     
-    trainer.save_model()
-    
-    wandb.finish()
-
 if __name__ == "__main__":
     main() 

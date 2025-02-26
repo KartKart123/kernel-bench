@@ -24,6 +24,7 @@ REPO_TOP_PATH = os.path.abspath(
         "..",
     )
 )
+
 KERNEL_BENCH_PATH = os.path.join(REPO_TOP_PATH, "KernelBench")
 
 
@@ -44,30 +45,30 @@ def fetch_kernel_from_database(
     return response_json
 
 
-def fetch_ref_arch_from_problem_id(problem_id, problems, with_name=False) -> str:
-    """
-    Fetches the reference architecture in string for a given problem_id
-    """
-    if isinstance(problem_id, str):
-        problem_id = int(problem_id)
+# def fetch_ref_arch_from_problem_id(problem_id, problems, with_name=False) -> str:
+#     """
+#     Fetches the reference architecture in string for a given problem_id
+#     """
+#     if isinstance(problem_id, str):
+#         problem_id = int(problem_id)
 
-    problem_path = problems[problem_id]
+#     problem_path = problems[problem_id]
 
-    # problem_path = os.path.join(REPO_ROOT_PATH, problem)
-    if not os.path.exists(problem_path):
-        raise FileNotFoundError(f"Problem file at {problem_path} does not exist.")
+#     # problem_path = os.path.join(REPO_ROOT_PATH, problem)
+#     if not os.path.exists(problem_path):
+#         raise FileNotFoundError(f"Problem file at {problem_path} does not exist.")
 
-    ref_arch = utils.read_file(problem_path)
-    if not with_name:
-        return ref_arch
-    else:
-        return (problem_path, ref_arch)
+#     ref_arch = utils.read_file(problem_path)
+#     if not with_name:
+#         return ref_arch
+#     else:
+#         return (problem_path, ref_arch)
 
 
-def fetch_ref_arch_from_level_problem_id(level, problem_id, with_name=False):
-    PROBLEM_DIR = os.path.join(KERNEL_BENCH_PATH, "level" + str(level))
-    dataset = utils.construct_problem_dataset_from_problem_dir(PROBLEM_DIR)
-    return fetch_ref_arch_from_problem_id(problem_id, dataset, with_name)
+# def fetch_ref_arch_from_level_problem_id(level, problem_id, with_name=False):
+#     PROBLEM_DIR = os.path.join(KERNEL_BENCH_PATH, "level" + str(level))
+#     dataset = utils.construct_problem_dataset_from_problem_dir(PROBLEM_DIR)
+#     return fetch_ref_arch_from_problem_id(problem_id, dataset, with_name)
 
 
 def set_seed(seed: int):
@@ -91,7 +92,7 @@ class KernelExecResult(BaseModel):
 
 
 def load_original_model_and_inputs(
-    model_original_src: str, context: dict
+    model_original_src: str, context: dict, metadata: dict, process_index: int = None
 ) -> tuple[nn.Module, callable, callable]:
     """
     Load class from original NN.module pytorch code
@@ -101,13 +102,15 @@ def load_original_model_and_inputs(
     try:
         compile(model_original_src, "<string>", "exec")
     except SyntaxError as e:
-        print(f"Syntax Error in original code {e}")
+        print(f"[Eval {process_index}] Syntax Error in original code {e}")
+        metadata = register_and_format_exception("syntax_error", e, metadata)
         return None
 
     try:
         exec(model_original_src, context)  # expose to current namespace
     except Exception as e:
-        print(f"Error in executing original code {e}")
+        print(f"[Eval {process_index}] Error in executing original code {e}")
+        metadata = register_and_format_exception("runtime_error", e, metadata)
         return None
 
     # these should be defined in the original model code and present in the context
@@ -137,7 +140,7 @@ def time_limit(seconds):
 
 
 def load_custom_model(
-    model_custom_src: str, context: dict, build_directory: str = None
+    model_custom_src: str, context: dict, build_directory: str = None, metadata: dict = None, process_index: int = None
 ) -> nn.Module:
     """
     Load class from custom NN.module pytorch code
@@ -154,11 +157,13 @@ def load_custom_model(
         with time_limit(120): 
             exec(model_custom_src, context)
     except TimeoutException as e:
-        print(f"Execution timed out: {e}")
+        print(f"[Eval {process_index}] Execution timed out: {e}")
+        metadata = register_and_format_exception("timeout", e, metadata)
         # Handle timeout case appropriately
         return None
     except Exception as e:
-        print(f"Error in executing custom code {e}")
+        print(f"[Eval {process_index}] {e.__class__.__name__} in executing custom code {e}")
+        metadata = register_and_format_exception("runtime_error", e, metadata)
         # Handle other exceptions
         return None
 
@@ -178,24 +183,18 @@ def _cleanup_cuda_extensions():
         shutil.rmtree(torch_extensions_path)
 
 
-def graceful_eval_cleanup(curr_context: dict, device: torch.device):
+def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.device):
     try:
         """
         Clean up env, gpu cache, and compiled CUDA extensions after evaluation
         """  # delete ran-specific function definitions before next eval run
         del curr_context
-        # Clear CUDA cache and reset GPU state
+        # # Clear CUDA cache and reset GPU state
         with torch.cuda.device(device):
             torch.cuda.empty_cache()
-
-            # does this help?
             torch.cuda.reset_peak_memory_stats(device=device)
-
-            torch.cuda.synchronize(
-                device=device
-            )  # Wait for all CUDA operations to complete
-
-        # _cleanup_cuda_extensions() # SIMON NOTE: is this necessary?
+            torch.cuda.synchronize(device=device)
+        # print(f"PROCESS {process_index} finished graceful_eval_cleanup")
     except Exception as e:
         print(e, "graceful_eval_cleanup encountered an error")
 
@@ -322,6 +321,7 @@ def build_compile_cache_with_capturing(
 
 
 def eval_kernel_against_ref(
+    process_index,
     original_model_src: str,
     custom_model_src: str,
     seed_num: int = 42,
@@ -330,7 +330,7 @@ def eval_kernel_against_ref(
     verbose: bool = False,
     measure_performance: bool = False,
     build_dir: os.PathLike = None,
-    device: torch.device = torch.cuda.current_device() if torch.cuda.is_available() else None, # have to run on GPU
+    device=7, # have to run on vacant GPU specifically for eval
 ) -> KernelExecResult:
     """
     Evaluate the custom kernel against the original model
@@ -340,7 +340,7 @@ def eval_kernel_against_ref(
     device: GPU (cuda) device to run the evalutation on
     """
     # TODO: check device is busy
-    assert torch.cuda.is_available(), "CUDA is not available, cannot run Eval"
+    # assert torch.cuda.is_available(), "CUDA is not available, cannot run Eval"
     torch.set_printoptions(
         precision=4,  # Decimal places
         threshold=10,  # Total number of elements before truncating
@@ -348,18 +348,27 @@ def eval_kernel_against_ref(
         linewidth=80,  # Maximum width before wrapping
     )
 
+    # Run eval on the same GPU
+    device = process_index
     # set CUDA device
     torch.cuda.set_device(device)
 
     context = {}
 
+    metadata = {}  # for storing result metadata
+    # metadata["hardware"] = torch.cuda.get_device_name(device=device)
+    metadata["process"] = process_index  
+
     if verbose:
-        print(f"[Eval] Start Evalulation! on device: {device}")
-        print("[Eval] Loading Original Model")
+        print(f"[Eval {process_index}] Start Evalulation of process {process_index} and on device {device}")
+        print(f"[Eval {process_index}] Loading Original Model")
 
     Model, get_init_inputs, get_inputs = load_original_model_and_inputs(
-        original_model_src, context
+        original_model_src, context, metadata, process_index
     )
+    if Model is None:
+        return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
+    
     set_seed(seed_num)  # set seed for reproducible input
     init_inputs = get_init_inputs()
     init_inputs = [
@@ -369,29 +378,32 @@ def eval_kernel_against_ref(
     with torch.no_grad():
         set_seed(seed_num)  # set seed for reproducible weights
         original_model = Model(*init_inputs)
-        assert hasattr(original_model, "forward")
+        if not hasattr(original_model, "forward"):
+            print(f"[Error {process_index}] Original model does not have a forward method")
+            metadata = register_and_format_exception(
+                "runtime_error", 
+                "Original model does not have a forward method", 
+                metadata
+            )
+            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
         if verbose:
-            print("[Eval] Original Model Loaded")
+            print(f"[Eval {process_index}] Original Model Loaded")
     if verbose:
-        print("[Eval] Loading and Compiling New Model with Custom CUDA Kernel")
+        print(f"[Eval {process_index}] Loading and Compiling New Model with Custom CUDA Kernel")
 
-    metadata = {}  # for storing result metadata
-    metadata["hardware"] = torch.cuda.get_device_name(device=device)
-    metadata["device"] = str(device)  # for debugging
-
-    stdout_buffer = StringIO()
     # this is where compilation happens
     try:
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
-        with redirect_stdout(stdout_buffer), redirect_stderr(stdout_buffer):
-            ModelNew = load_custom_model(custom_model_src, context, build_dir)
+        ModelNew = load_custom_model(custom_model_src, context, build_dir, metadata, process_index)
         torch.cuda.synchronize(device=device)  # not sure if this is too much
         if ModelNew is None:
-            raise RuntimeError("ModelNew is None")
+            # raise RuntimeError("ModelNew is None")
+            graceful_eval_cleanup(process_index, context, device)
+            return KernelExecResult(compiled=False, correctness=False, metadata=metadata)
     except Exception as e:
         print(
-            f"Failed to compile custom CUDA kernel: Record as compilation failure. \nError: {e}"
+            f"[Error {process_index}] Failed to compile custom CUDA kernel: Record as compilation failure. \nError: {e}"
         )
         # TODO: add metadata for compilation error (how to we get the compilation error message?)
 
@@ -399,15 +411,15 @@ def eval_kernel_against_ref(
             # this is a lock file error, likely due to concurrent compilation
             # this does not necessarily mean the compilation failed, but we should retry
             print(
-                f"[Eval] Lock file error during compilation, Please retry. Error: {e}"
+                f"[Eval {process_index}] Lock file error during compilation, Please retry. Error: {e}"
             )
-            graceful_eval_cleanup(context, device)
+            metadata = register_and_format_exception("lock_file_error", e, metadata)
+            graceful_eval_cleanup(process_index, context, device)
             return None
         else:
-            metadata["compilation_error"] = e
-            print(f"[Eval] got the following in the buffer: XX{stdout_buffer.getvalue()}XX")
-            metadata["compilation_error_message"] = stdout_buffer.getvalue()
-            graceful_eval_cleanup(context, device)
+            # metadata["compilation_error"] = e
+            metadata = register_and_format_exception("compilation_error", e, metadata)
+            graceful_eval_cleanup(process_index, context, device)
             return KernelExecResult(
                 compiled=False, metadata=metadata
             )  # skip further steps
@@ -420,14 +432,15 @@ def eval_kernel_against_ref(
             assert hasattr(custom_model, "forward")
             torch.cuda.synchronize(device=device)
         if verbose:
-            print("[Eval] New Model with Custom CUDA Kernel Loaded")
+            print(f"[Eval {process_index}] New Model with Custom CUDA Kernel Loaded")
     except Exception as e:
         print(
-            f"Failed to load custom CUDA kernel; Compiled but not able to run, count as runtime error. \nError: {e}"
+            f"[Error {process_index}] Failed to load custom CUDA kernel; Compiled but not able to run, count as runtime error. \nError: {e}"
         )
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
-        graceful_eval_cleanup(context, device)
-        metadata["runtime_error"] = e
+        graceful_eval_cleanup(process_index, context, device)
+        # metadata["runtime_error"] = e
+        metadata = register_and_format_exception("runtime_error", e, metadata)
         return KernelExecResult(
             compiled=True, correctness=False, metadata=metadata
         )  # skip further steps
@@ -436,9 +449,10 @@ def eval_kernel_against_ref(
 
     # Check Correctness
     if verbose:
-        print("[Eval] Checking Correctness")
+        print(f"[Eval {process_index}] Checking Correctness")
     try:
         kernel_exec_result = run_and_check_correctness(
+            process_index,
             original_model,
             custom_model,
             get_inputs,
@@ -447,21 +461,27 @@ def eval_kernel_against_ref(
             verbose=verbose,
             seed=seed_num,
             device=device,
+            original_model_src=original_model_src,
+            custom_model_src=custom_model_src,
         )
-
     except Exception as e:
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
-        metadata["runtime_error"] = e
+        graceful_eval_cleanup(process_index, context, device)
+        # metadata["runtime_error"] = e
+        metadata = register_and_format_exception("runtime_error", e, metadata)
         kernel_exec_result = KernelExecResult(
             compiled=True, correctness=False, metadata=metadata
         )
-
+        return kernel_exec_result
+    if "early_exit" in metadata and metadata["early_exit"] == True: # if error in run_and_check_correctness
+        graceful_eval_cleanup(process_index, context, device)
+        return kernel_exec_result
     # Measure Performance [Optional] | conditioned on compilation + correctness + no exception so far
     if measure_performance:
         try:
             if kernel_exec_result and kernel_exec_result.correctness:
                 if verbose:
-                    print("[Eval] Measuring Performance as Sample is Correct")
+                    print(f"[Eval {process_index}] Measuring Performance as Sample is Correct")
 
                 torch.cuda.synchronize(device=device)
                 set_seed(seed_num)
@@ -495,19 +515,18 @@ def eval_kernel_against_ref(
                 runtime_stats_original = get_timing_stats(elapsed_times_original, device=device)
 
                 if verbose:
-                    print(f"[Eval] Performance Stats: {runtime_stats}")
+                    print(f"[Eval {process_index}] Performance Stats: {runtime_stats}")
                 kernel_exec_result.runtime = runtime_stats["mean"]
                 kernel_exec_result.runtime_stats = runtime_stats
                 kernel_exec_result.runtime_original = runtime_stats_original["mean"]
                 kernel_exec_result.runtime_stats_original = runtime_stats_original
-                kernel_exec_result.metadata["speedup"] = runtime_stats_original["mean"] / runtime_stats["mean"]
-
         except Exception as e:
             if verbose:
-                print(f"[Eval] Error in Measuring Performance: {e}")
-            kernel_exec_result.metadata["error_during_performance"] = e
+                print(f"[Eval {process_index}] Error in Measuring Performance: {e}")
+            # kernel_exec_result.metadata["error_during_performance"] = e   
+            kernel_exec_result.metadata = register_and_format_exception("error_during_performance", e, kernel_exec_result.metadata)
 
-    graceful_eval_cleanup(context, device)
+    graceful_eval_cleanup(process_index, context, device)
     return kernel_exec_result
 
 
@@ -516,23 +535,28 @@ def register_and_format_exception(
     exception_msg: Exception | str,
     metadata: dict,
     verbose: bool = False,
-    truncate=False,
-    max_length=200,
+    truncate: bool = True,
+    max_length: int = 200,
 ):
     """
     max_length characters
 
     NOTE: I can't get torch truncate to work during exception handling so I have this for now
-    """
-    # Truncate exception message if too long
+    """    
     exception_str = str(exception_msg)
+    # Possible error types: syntax_error, compilation_error, runtime_error, lock_file_error (?), correctness_issue, error_during_performance, timeout
+    if exception_type == "syntax_error" and type(exception_msg) == SyntaxError:
+        exception_str = f"{exception_msg.msg} \n Line: {exception_msg.lineno}, Column: {exception_msg.offset}\n Code: {exception_msg.text.strip()}\n"
+
+    # Truncate exception message if too long
     if truncate and len(exception_str) > max_length:
         exception_str = exception_str[: max_length - 3] + "..."
 
     if verbose:
         print(f"[Exception {exception_type}] {exception_str} ")
-    metadata[exception_type] = exception_str
-
+    # metadata[exception_type] = exception_str
+    metadata["error_msg"] = exception_str
+    metadata["error_type"] = exception_type
     return metadata
 
 
@@ -543,6 +567,7 @@ def time_execution_with_cuda_event(
     num_trials: int = 10,
     verbose: bool = True,
     device: torch.device = None,
+    process_index: int = None,
 ) -> list[float]:
     """
     Time a CUDA kernel function over multiple trials using torch.cuda.Event
@@ -568,7 +593,7 @@ def time_execution_with_cuda_event(
         torch.cuda.synchronize(device=device)
 
     print(
-        f"[Profiling] Using device: {device} {torch.cuda.get_device_name(device)}, warm up {num_warmup}, trials {num_trials}"
+        f"[Profile {process_index}] Using device: {device} {torch.cuda.get_device_name(device)}, warm up {num_warmup}, trials {num_trials}"
     )
     elapsed_times = []
 
@@ -587,14 +612,15 @@ def time_execution_with_cuda_event(
 
         # Calculate the elapsed time in milliseconds
         elapsed_time_ms = start_event.elapsed_time(end_event)
-        if verbose:
-            print(f"Trial {trial + 1}: {elapsed_time_ms:.3g} ms")
+        # if verbose:
+            # print(f"Trial {trial + 1}: {elapsed_time_ms:.3g} ms")
         elapsed_times.append(elapsed_time_ms)
 
     return elapsed_times
 
 
 def run_and_check_correctness(
+    process_index,
     original_model_instance: nn.Module,
     new_model_instance: nn.Module,
     get_inputs_fn: callable,
@@ -603,6 +629,8 @@ def run_and_check_correctness(
     verbose=False,
     seed=42,
     device=None,
+    original_model_src: str = None,
+    custom_model_src: str = None,
 ) -> KernelExecResult:
     """
     run the model and check correctness,
@@ -625,7 +653,7 @@ def run_and_check_correctness(
 
             trial_seed = correctness_trial_seeds[trial]
             if verbose:
-                print(f"[Eval] Generating Random Input with seed {trial_seed}")
+                print(f"[Eval {process_index}] Generating Random Input with seed {trial_seed}")
 
             set_seed(trial_seed)
             inputs = get_inputs_fn()
@@ -655,7 +683,7 @@ def run_and_check_correctness(
                     )
                     if verbose:
                         print(
-                            f"[FAIL] trial {trial}: Output shape mismatch: Expected {output.shape}, got {output_new.shape}"
+                            f"[FAIL {process_index}] trial {trial}: Output shape mismatch: Expected {output.shape}, got {output_new.shape}"
                         )
                     return KernelExecResult(
                         compiled=True, correctness=False, metadata=metadata
@@ -670,20 +698,30 @@ def run_and_check_correctness(
                     metadata.setdefault("max_difference", []).append(f"{max_diff:.6f}")
                     metadata.setdefault("avg_difference", []).append(f"{avg_diff:.6f}")
                     metadata["correctness_issue"] = "Output mismatch"
+                    metadata = register_and_format_exception(
+                        "correctness_issue",
+                        f"Output value mismatch: Max difference {max_diff:.6f}, Avg difference {avg_diff:.6f}",
+                        metadata,
+                    )
                     if verbose:
-                        print(f"[FAIL] trial {trial}: Output mismatch")
+                        print(f"[FAIL {process_index}] trial {trial}: Output mismatch")
                 else:  # pass
                     pass_count += 1
                     if verbose:
-                        print(f"[PASS] trial {trial}: New Model matches Model")
+                        print(f"[PASS {process_index}] trial {trial}: New Model matches Model")
 
             except Exception as e:
-                print("[Error] Exception happens during correctness check")
+                print(f"[Error {process_index}] Exception happens during correctness check")
                 print(f"Error in launching kernel for ModelNew: {e}")
+                if verbose and "CUDA error" in str(e):
+                    print("CUDA ERROR DETECTED")
+                    print(f"Original Model Source: \n{original_model_src}")
+                    print(f"Custom Model Source: \n{custom_model_src}")
 
                 metadata = register_and_format_exception(
                     "runtime_error", e, metadata, truncate=True
                 )
+                metadata["early_exit"] = True
                 return KernelExecResult(
                     compiled=True, correctness=False, metadata=metadata
                 )
@@ -691,7 +729,7 @@ def run_and_check_correctness(
 
     if verbose:
         print(
-            f"[Eval] Pass count: {pass_count}, num_correct_trials: {num_correct_trials}"
+            f"[Eval {process_index}] Pass count: {pass_count}, num_correct_trials: {num_correct_trials}"
         )
 
     # put all the useful info here!
@@ -807,6 +845,9 @@ def get_timing_stats(elapsed_times: list[float], device: torch.device = None) ->
         stats["device"] = str(device)  # for debugging
 
     return stats
+
+
+
 
 
 # if __name__ == "__main__":
