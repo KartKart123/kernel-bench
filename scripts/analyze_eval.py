@@ -70,11 +70,11 @@ def main(config: AnalyzeConfig):
         total_stats['total_compiled'] += stats['compiled']
         total_stats['total_correct'] += stats['correct']
         all_speedups.extend(stats['speedups'])
-
+    
     # Sort file_stats by the leading number in the filename so it goes from 1 to 100
     file_stats = dict(sorted(file_stats.items(), 
                         key=lambda x: int(x[0].split('_')[0])))
-     
+    
     # Print per-file statistics
     print("\nPer-file Statistics:")
     print("-" * 80)
