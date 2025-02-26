@@ -190,6 +190,7 @@ def graceful_eval_cleanup(process_index, curr_context: dict, device: torch.devic
         Clean up env, gpu cache, and compiled CUDA extensions after evaluation
         """  # delete ran-specific function definitions before next eval run
         del curr_context
+        return
         # # Clear CUDA cache and reset GPU state
         with torch.cuda.device(device):
             torch.cuda.synchronize(device=device)
@@ -357,7 +358,7 @@ def eval_kernel_against_ref(
     verbose: bool = False,
     measure_performance: bool = False,
     build_dir: os.PathLike = None,
-    device=7, # have to run on vacant GPU specifically for eval
+    device = 7, # have to run on vacant GPU specifically for eval
 ) -> KernelExecResult:
     """
     Evaluate the custom kernel against the original model
@@ -376,7 +377,7 @@ def eval_kernel_against_ref(
     )
 
     # Run eval on the same GPU
-    device = process_index
+    # device = process_index
     # set CUDA device
     torch.cuda.set_device(device)
 
@@ -423,7 +424,7 @@ def eval_kernel_against_ref(
         os.environ["TORCH_USE_CUDA_DSA"] = "1"  # compile with device side assertion
         # add hash for later to distinguish between multi-turn kernels
         ModelNew = load_custom_model(custom_model_src, context, build_dir, metadata, process_index)
-        torch.cuda.synchronize(device=device)  # not sure if this is too much
+        # torch.cuda.synchronize(device=device)  # not sure if this is too much
         if ModelNew is None:
             # raise RuntimeError("ModelNew is None")
             graceful_eval_cleanup(process_index, context, device)
@@ -457,7 +458,7 @@ def eval_kernel_against_ref(
             set_seed(seed_num)  # set seed for reproducible weights
             custom_model = ModelNew(*init_inputs)
             assert hasattr(custom_model, "forward")
-            torch.cuda.synchronize(device=device)
+            # torch.cuda.synchronize(device=device)
         if verbose:
             print(f"[Eval {process_index}] New Model with Custom CUDA Kernel Loaded")
     except Exception as e:
@@ -510,7 +511,7 @@ def eval_kernel_against_ref(
                 if verbose:
                     print(f"[Eval {process_index}] Measuring Performance as Sample is Correct")
 
-                torch.cuda.synchronize(device=device)
+                # torch.cuda.synchronize(device=device)
                 set_seed(seed_num)
                 inputs = get_inputs()
                 inputs = [
@@ -518,7 +519,7 @@ def eval_kernel_against_ref(
                     for x in inputs
                 ]
                 model_new = custom_model.cuda(device=device)
-                torch.cuda.synchronize(device=device)
+                # torch.cuda.synchronize(device=device)
 
                 elapsed_times = time_execution_with_cuda_event(
                     model_new,
@@ -696,12 +697,12 @@ def run_and_check_correctness(
             model_new = new_model_instance.cuda(device=device)
 
             output = model(*inputs)
-            torch.cuda.synchronize(device=device)
+            # torch.cuda.synchronize(device=device)
             # ensure all GPU operations are completed before checking results
 
             try:
                 output_new = model_new(*inputs)
-                torch.cuda.synchronize(device=device)
+                # torch.cuda.synchronize(device=device)
                 if output.shape != output_new.shape:
                     metadata = register_and_format_exception(
                         "correctness_issue",

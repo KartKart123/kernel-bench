@@ -24,8 +24,8 @@ def result_to_json_dict(result: KernelExecResult) -> dict:
         'run': result.run,
         'correctness': result.correctness,
         'metadata': make_serializable(result.metadata),
-        'runtime': float(result.runtime),
-        'runtime_stats': make_serializable(result.runtime_stats),
+        # 'runtime': float(result.runtime),
+        # 'runtime_stats': make_serializable(result.runtime_stats),
         # 'runtime_original': float(result.runtime_original),
         # 'runtime_stats_original': make_serializable(result.runtime_stats_original)
     }
@@ -34,7 +34,9 @@ def main():
     # Read input from files specified in command line arguments
     ref_path = sys.argv[1]
     custom_path = sys.argv[2]
-    process_index = int(sys.argv[3])
+    unique_process_index = sys.argv[3]
+    process_index = int(unique_process_index.split("_")[0])
+    id = int(unique_process_index.split("_")[1])
     eval_cache_path = sys.argv[4]
 
     with open(ref_path, 'r') as f:
@@ -43,7 +45,7 @@ def main():
         custom_cuda = f.read()
 
     # Clear torch cache before compilation
-    torch_ext_dir = f"/home/ubuntu/.cache/torch_extensions/py312_cu124_{process_index}"
+    torch_ext_dir = f"/home/ubuntu/.cache/torch_extensions/py312_cu124_{unique_process_index}"
     os.environ["TORCH_EXTENSIONS_DIR"] = torch_ext_dir # environment variable unique to each process
     if os.path.exists(torch_ext_dir):
         shutil.rmtree(torch_ext_dir)
@@ -53,7 +55,7 @@ def main():
         process_index=process_index,
         original_model_src=ref_arch,
         custom_model_src=custom_cuda,
-        measure_performance=True,
+        measure_performance=False,
         verbose=True
     )
 
