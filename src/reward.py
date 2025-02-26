@@ -6,6 +6,8 @@ from src.safe_eval import KernelExecResult
 import subprocess
 import sys
 import tempfile
+from src.refinement_prompt_utils import MutableDataset, get_refined_prompt, AnswerResult
+from datasets import Dataset
 
 def calculate_kernel_reward(
     eval_result: KernelExecResult,
@@ -47,7 +49,13 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
 
     for prompt, completion, ref_arch, ind_level, id in zip(prompts, completions, ref_arch_src, level, task_id):
         reward = 0.0
+        print(completion)
         content = completion[0]["content"]
+        x = prompt[0]["content"]
+        print("!!!!>", x, "<!!!!")
+        if x.endswith("!!!"): 
+            print("REFINED KERNEL")
+            print(content)
         if verbose: 
             print("=" * 80)
             print(f"[Reward {process_index}] Task ID: {id}")
@@ -56,7 +64,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
         match = re.match(parse_pattern, content, re.DOTALL)
         if match is None:
             print(f"[Reward {process_index} EXIT] had no match")
-            print(content)
+            # print(content)
             rewards.append(reward)
             continue
 
@@ -77,6 +85,9 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
 
         if ("__global__" not in custom_cuda) or ("load_inline(" not in custom_cuda) or ("try:" in custom_cuda) or ("pass" in custom_cuda):
             print(f"[Reward {process_index} EXIT] output has no cuda kernel")
+            new_prompt = get_refined_prompt(ref_arch, content, AnswerResult.NO_CUDA, additional_info={"custom_cuda" : custom_cuda})
+            trainer.train_dataset.add_datapoint(new_prompt, ref_arch, ind_level, id)
+
             print(custom_cuda)
             rewards.append(reward)
             continue
@@ -102,7 +113,6 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
         #     json.dump(pre_eval_data, f, indent=2)
 
         # print(f"[Reward {process_index}] EVALUATING")
-        
         # Write code to temporary files
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f_ref:
             f_ref.write(ref_arch)
@@ -150,7 +160,7 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
                     runtime_original=output["runtime_original"],
                     runtime_stats_original=output["runtime_stats_original"]
                 )
-                
+
         except subprocess.TimeoutExpired:
             print(f"[Reward {process_index}] Evaluation timed out")
         except Exception as e:
@@ -216,6 +226,5 @@ def reward_fn(prompts, completions, ref_arch_src, level, task_id, trainer, outpu
         # Write back to file
         with open(arch_output_path, 'w') as f:
             json.dump(data, f,indent=2)
-        # print(f"[Reward {process_index}] SAVING OUTPUTS DONE")
-    # print(f"[Reward {process_index}] REWARDS: {rewards}")
+    trainer.train_dataset.sync()
     return rewards
